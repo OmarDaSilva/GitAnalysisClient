@@ -1,0 +1,14 @@
+{
+  "nodes": [
+    {"id": "Person1", "group": 1},
+    {"id": "Person2", "group": 1},
+    {"id": "Person3", "group": 1},
+    {"id": "Person4", "group": 1}
+  ],
+  "links": [
+    {"source": "Person1", "target": "Person4", "value": 1},
+    {"source": "Person2", "target": "Person4", "value": 1},
+    {"source": "Person3", "target": "Person4", "value": 1}
+  ]
+}
+

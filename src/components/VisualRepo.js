@@ -1,5 +1,6 @@
 import ForceGraph from "./ForceGraph";
 import data from '../data/data.json';
+// import data from '../data/testdata.json';
 import { useEffect, useRef, useLayoutEffect } from "react";
 import { createRoot } from 'react-dom/client';
 import Filter from "./Filter";

@@ -1,22 +1,24 @@
 {
   "nodes": [
-    {"id": "Person1", "group": 1},
-    {"id": "Person2", "group": 1},
-    {"id": "Person3", "group": 1},
-    {"id": "Person4", "group": 1},
-    {"id": "Person5", "group": 2},
-    {"id": "Person6", "group": 2},
-    {"id": "Person7", "group": 2},
-    {"id": "Person8", "group": 2},
-    {"id": "Person5", "group": 3},
-    {"id": "Person6", "group": 3},
-    {"id": "Person7", "group": 3},
-    {"id": "Person8", "group": 3}
+    {"id": "root", "group": 1, "colour": "red"},
+    {"id": "package.json", "group": 2,  "colour": "lightblue"},
+    {"id": "package-lock.json", "group": 2, "colour": "lightblue"},
+    {"id": "src", "group": 2, "colour": "darkblue"},
+    {"id": "src/components", "group": 3, "colour": "darkblue"},
+    {"id": "src/components/LeftBar.tsx", "group": 4, "colour": "lightblue"},
+    {"id": "src/components/RightBar.tsx", "group": 4, "colour": "lightblue"},
+    {"id": "src/components/types", "group": 5, "colour": "darkblue"},
+    {"id": "src/components/types/RightBar.types.ts", "group": 6, "colour": "lightblue"}
   ],
   "links": [
-    {"source": "Person1", "target": "Person4", "value": 2},
-    {"source": "Person2", "target": "Person4", "value": 1},
-    {"source": "Person3", "target": "Person4", "value": 1}
+    {"source": "package.json", "target": "root", "value": 1},
+    {"source": "package-lock.json", "target": "root", "value": 1},
+    {"source": "src", "target": "root", "value": 1},
+    {"source": "src/components", "target": "src", "value": 1},
+    {"source": "src/components/LeftBar.tsx", "target": "src/components", "value": 1},
+    {"source": "src/components/RightBar.tsx", "target": "src/components", "value": 1},
+    {"source": "src/components/types", "target": "src/components", "value": 1},
+    {"source": "src/components/types/RightBar.types.ts", "target": "src/components/types", "value": 1}
   ]
 }
 

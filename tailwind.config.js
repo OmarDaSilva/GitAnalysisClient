@@ -12,12 +12,12 @@ module.exports = {
     theme: {
       extend: {
         colors: {
-          Primary: {
-            DEFAULT: '#3E434B;'
-          },
-          Secondary: {
-            DEFAULT: '#1C1E23'
-          }
+          // Primary: {
+          //   DEFAULT: '#3E434B;'
+          // },
+          // Secondary: {
+          //   DEFAULT: '#DCDCDC'
+          // }
         }
       },
     },

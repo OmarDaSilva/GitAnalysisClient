@@ -1,6 +1,7 @@
 import emitter from "../eventemitter";
+import { RepoStateDispatch, repoAnalysis } from "../pages";
 
-export default async function UploadService(repo: File) {
+export default async function UploadService(repo: File, dispatch: RepoStateDispatch) {
   if (process.env.NEXT_PUBLIC_REPO_ANALYSIS_BACKEND_ROUTE) {
     const file = new FormData();
     file.append("file", repo);
@@ -14,10 +15,15 @@ export default async function UploadService(repo: File) {
       );
 
       if (analysisResponse) {
+        
         const data = await analysisResponse.json()
-        emitter.emit('RepoAnalaysed', data)  
-        console.log(Object.keys(data));
-        emitter.emit('RepoAnalysedDates', Object.keys(data))      
+        let repoDates = Object.keys(data);
+        let repo = data[repoDates[0]];
+        emitter.emit('RepoAnalaysed', repo);
+        emitter.emit('RepoAnalysedDates', Object.keys(data))    
+        Object.keys(data).forEach((date => {
+          dispatch({ type: 'Add', payload: { key: date, value: data[date]}})
+        }))  
       }
     } catch {}
   }

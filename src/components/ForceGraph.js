@@ -6,8 +6,9 @@ export default function ForceGraph({
     nodes, // an iterable of node objects (typically [{id}, …])
     links // an iterable of link objects (typically [{source, target}, …])
   }, {
-    nodeId = d => d.id,// given d in nodes, returns a unique identifier (string)
-    nodeColour = d => d.colour, // given d in nodes, returns a colour identifier
+    nodeId = d => d.id, // given d in nodes, returns a unique identifier (string)
+    nodeColour = d => d.colour,
+    nodeName = d => d.name, // given d in nodes, returns a colour identifier
     nodeGroup, // given d in nodes, returns an (ordinal) value for color
     nodeGroups, // an array of ordinal values representing the node groups
     nodeTitle, // given d in nodes, a title string
@@ -15,7 +16,7 @@ export default function ForceGraph({
     nodeStroke = "#fff", // node stroke color
     nodeStrokeWidth = 3, // node stroke width, in pixels
     nodeStrokeOpacity = 2, // node stroke opacity
-    nodeRadius = 10, // node radius, in pixels
+    nodeRadius = 5, // node radius, in pixels
     nodeStrength,
     linkSource = ({source}) => source, // given d in links, returns a node identifier string
     linkTarget = ({target}) => target, // given d in links, returns a node identifier string
@@ -25,23 +26,24 @@ export default function ForceGraph({
     linkStrokeLinecap = "round", // link stroke linecap
     linkStrength,
     colors = d3.schemeTableau10, // an array of color strings, for the node groups
-    width = 640, // outer width, in pixels
-    height = 400, // outer height, in pixels
+    width = 1000, // outer width, in pixels
+    height = 600, // outer height, in pixels
     invalidation // when this promise resolves, stop the simulation
   } = {}) {
     // Compute values.
     const N = d3.map(nodes, nodeId).map(intern);
+    const NN = d3.map(nodes, nodeName).map(intern);
     const NC = d3.map(nodes, nodeColour).map(intern);
     const LS = d3.map(links, linkSource).map(intern);
     const LT = d3.map(links, linkTarget).map(intern);
-    if (nodeTitle === undefined) nodeTitle = (_, i) => N[i];
+    if (nodeTitle === undefined) nodeTitle = (_, i) => NN[i];
     const T = nodeTitle == null ? null : d3.map(nodes, nodeTitle);
     const G = nodeGroup == null ? null : d3.map(nodes, nodeGroup).map(intern);
     const W = typeof linkStrokeWidth !== "function" ? null : d3.map(links, linkStrokeWidth);
     const L = typeof linkStroke !== "function" ? null : d3.map(links, linkStroke);
   
     // Replace the input nodes and links with mutable objects for the simulation.
-    nodes = d3.map(nodes, (_, i) => ({id: N[i], colour: NC[i]}));
+    nodes = d3.map(nodes, (_, i) => ({id: N[i], colour: NC[i], name: NN[i]}));
     links = d3.map(links, (_, i) => ({source: LS[i], target: LT[i]}));
   
     // Compute default domains.
@@ -63,23 +65,23 @@ export default function ForceGraph({
   
     // Construct the forces.
 
-    const forceNode = d3.forceManyBody();
-    const forceLink = d3.forceLink(links).id(({index: i}) => N[i]);
+    const forceNode = d3.forceManyBody().strength(-15);
+    const forceLink = d3.forceLink(links).id(({index: i}) => N[i]).distance(5);
     if (nodeStrength !== undefined) forceNode.strength(nodeStrength);
     if (linkStrength !== undefined) forceLink.strength(linkStrength);
-  
-    const simulation = d3.forceSimulation(nodes)
-        .force("link", forceLink)
-        .force("charge", forceNode)
-        .force("center",  d3.forceCenter())
-        .on("tick", ticked);
-  
+    
     const svg = d3.create("svg")
-        .attr("width", width)
-        .attr("height", height)
-        .attr("viewBox", [-width / 2, -height / 2, width, height])
-        .attr("style", "max-width: 100%; height: auto; height: intrinsic;");
-  
+    .attr("width", width)
+    .attr("height", height)
+    .attr("viewBox", [-width / 2, -height / 2, width, height])
+    .attr("style", "max-width: 100%; height: 100%; height: intrinsic;");
+    
+      const simulation = d3.forceSimulation(nodes)
+          .force("link", forceLink)
+          .force("charge", forceNode)
+          .force("center",  d3.forceCenter())
+          .on("tick", ticked);
+    
     const link = svg.append("g")
         .attr("stroke", typeof linkStroke !== "function" ? linkStroke : null)
         .attr("stroke-opacity", linkStrokeOpacity)
@@ -125,7 +127,7 @@ export default function ForceGraph({
   
     function drag(simulation) {    
       function dragstarted(event) {
-        if (!event.active) simulation.alphaTarget(0.3).restart();
+        if (!event.active) simulation.alphaTarget(0.5).restart();
         event.subject.fx = event.subject.x;
         event.subject.fy = event.subject.y;
       }

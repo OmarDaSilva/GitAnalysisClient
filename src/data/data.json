@@ -1,14 +1,14 @@
 {
   "nodes": [
-    {"id": "root", "group": 1, "colour": "red"},
-    {"id": "package.json", "group": 2,  "colour": "lightblue"},
-    {"id": "package-lock.json", "group": 2, "colour": "lightblue"},
-    {"id": "src", "group": 2, "colour": "darkblue"},
-    {"id": "src/components", "group": 3, "colour": "darkblue"},
-    {"id": "src/components/LeftBar.tsx", "group": 4, "colour": "lightblue"},
-    {"id": "src/components/RightBar.tsx", "group": 4, "colour": "lightblue"},
-    {"id": "src/components/types", "group": 5, "colour": "darkblue"},
-    {"id": "src/components/types/RightBar.types.ts", "group": 6, "colour": "lightblue"}
+    {"id": "root", "group": 1, "colour": "red", "name": "root"},
+    {"id": "package.json", "group": 2,  "colour": "lightblue", "name": "package"},
+    {"id": "package-lock.json", "group": 2, "colour": "lightblue", "name": "package"},
+    {"id": "src", "group": 2, "colour": "darkblue", "name": "package"},
+    {"id": "src/components", "group": 3, "colour": "darkblue", "name": "package"},
+    {"id": "src/components/LeftBar.tsx", "group": 4, "colour": "lightblue", "name": "package"},
+    {"id": "src/components/RightBar.tsx", "group": 4, "colour": "lightblue", "name": "package"},
+    {"id": "src/components/types", "group": 5, "colour": "darkblue", "name": "package"},
+    {"id": "src/components/types/RightBar.types.ts", "group": 6, "colour": "lightblue", "name": "package"}
   ],
   "links": [
     {"source": "package.json", "target": "root", "value": 1},

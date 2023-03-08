@@ -6,6 +6,7 @@ import RightBar from "../components/RightBar";
 import { createContext, useState, useReducer} from "react";
 
 type dictionary = {
+
   [key: string]: {
     links: {},
     nodes: {}
@@ -59,6 +60,7 @@ export default function Home() {
         <main className="flex flex-row justify-between">
           <LeftBar />
           <VisualRepo />
+          <RightBar />
         </main>
       </ReposContext.Provider>
     </>

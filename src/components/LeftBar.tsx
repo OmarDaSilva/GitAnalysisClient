@@ -16,7 +16,7 @@ export default function LeftBar() {
 
   const [dates, setData] = useState<null | dateItem[]>(null);
   const [showDateMenu, toggleDateMenu] = useState(false);
-  const { state, dispatch } = useContext(ReposContext)
+  const { state, dispatch } = useContext(ReposContext);
 
   emitter.addListener("RepoAnalysedDates", (data: string[]) => {
     const dates = data.map((date) => {
@@ -28,7 +28,6 @@ export default function LeftBar() {
     setData(dates);
   });
 
-  
   const changeRepoDateAnalysis = (date: string) => {
     emitter.emit("RepoDateAnalaysisChange", state.repos[date]);
   };
@@ -48,30 +47,37 @@ export default function LeftBar() {
     const uploadedFile = inputRepo.current;
     if (uploadedFile) {
       setRepoName(uploadedFile!.files![0].name.replace(".zip", ""));
-      emitter.emit('RepoAnalysing');      
+      emitter.emit("RepoAnalysing");
       UploadService(uploadedFile!.files![0], dispatch);
     }
   }
 
   return (
-    <div className="w-1/4">
+    <div className="w-1/4 grid grid-rows-2 gap-3">
       <Paper shadow="md" radius="lg" p="xl">
         <div className="grid grid-cols-1 gap-2">
           <div className="bg-Secondary p-3 flex flex-row justify-between ">
-            <p className="text-[32px] text-[#495057]">
-              {repoName}
-              {/* <Select
+            <p className="text-[32px] text-[#495057]" />
+              <Select
                 disabled={!dates}
                 data={dates ?? []}
-                placeholder="Repository"
-                // label="Repository date changes"
+                placeholder="Change Repository"
+                label={repoName}
                 variant="filled"
                 radius="md"
                 size="md"
-                onChange={(value) => changeRepoDateAnalysis(value!)}
+                // onChange={(value) => changeRepoDateAnalysis(value!)}
                 style={{ width: "100%" }}
-              />  */}
-            </p>
+                styles={() => {
+                  return {
+                    label: {
+                      fontSize: "30px",
+                      fontWeight: 400,
+                    },
+                  };
+                }}
+              />
+            
           </div>
           <Divider />
           <div className="p-3 flex flex-row justify-between bg-Secondary">
@@ -89,17 +95,41 @@ export default function LeftBar() {
             </button>
           </div>
           <Divider />
-          <div className="bg-Secondary p-3 flex flex-row justify-between ">
-            <p className="text-[20px] text-[#495057]">Event: Merge</p>
+          <div>
+            <div className="bg-Secondary p-3 grid grid-row-2 gap-3 justify-between">
+              <Select
+                disabled={!dates}
+                data={dates ?? []}
+                placeholder="Branch"
+                // label="From"
+                variant="filled"
+                radius="md"
+                size="md"
+                // onChange={}
+                style={{ width: "100%" }}
+              />
+            </div>
           </div>
+
           <Divider />
           <div>
-            <div className="bg-Secondary p-3 flex flex-row justify-between">
+            <div className="bg-Secondary p-3 grid grid-row-2 gap-3 justify-between">
               <Select
                 disabled={!dates}
                 data={dates ?? []}
                 placeholder="Repository date"
-                // label="Repository date changes"
+                label="From"
+                variant="filled"
+                radius="md"
+                size="md"
+                onChange={(value) => changeRepoDateAnalysis(value!)}
+                style={{ width: "100%" }}
+              />
+              <Select
+                disabled={!dates}
+                data={dates ?? []}
+                placeholder="Repository date"
+                label="To"
                 variant="filled"
                 radius="md"
                 size="md"
@@ -109,21 +139,14 @@ export default function LeftBar() {
             </div>
           </div>
           <Divider />
-          <div className="bg-Secondary p-3 flex flex-col justify-between ">
-            <p className="text-[20px] text-[#495057] mb-3">File changes</p>
-            <div className="bg-Primary">Hello</div>
-          </div>
-          <Divider />
-          <div className="bg-Secondary p-3 flex flex-col justify-between ">
-            <p className="text-[20px] text-[#495057] mb-3">Commits </p>
-            <div className="bg-Primary">Hello</div>
-          </div>
-          <Divider />
-          <div className="bg-Secondary p-3 flex flex-col justify-between ">
-            <p className="text-[20px] text-[#495057] mb-3">Contributors </p>
-            <div className="bg-Primary">Hello</div>
-          </div>
         </div>
+      </Paper>
+
+      <Paper shadow="md" radius="lg" p="xl">
+        <div className="bg-Secondary p-3 grid grid-row-2 gap-3 justify-between">
+          Hierarchical Views
+        </div>
+        <Divider />
       </Paper>
     </div>
   );

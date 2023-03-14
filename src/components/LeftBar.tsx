@@ -1,41 +1,47 @@
 import Image from "next/image";
 import { useContext, useRef, useState } from "react";
 import UploadService from "../services/UploadService";
+import { repoDates } from "../services/UploadService";
 import emitter from "../eventemitter";
 import { Divider, Paper, Select } from "@mantine/core";
-import { ReposContext } from "../pages";
+import { ReposContext, storedRepos } from "../pages";
 
-type dateItem = {
-  value: string;
-  label: string;
-};
+import useRepoLocalStorage from '../hooks/useRepoDates'
+import LocalRepoData from "../types/LocalRepoData.type";
 
 export default function LeftBar() {
-  const [repoName, setRepoName] = useState<String | null>("Repository");
+  const [repoName, setRepoName] = useState<string | null>("Repository");
   const inputRepo = useRef<HTMLInputElement | null>(null);
 
-  const [dates, setData] = useState<null | dateItem[]>(null);
+  const [dates, setDates] = useState<null | string[]>(null);
   const [showDateMenu, toggleDateMenu] = useState(false);
   const { state, dispatch } = useContext(ReposContext);
+  
 
-  emitter.addListener("RepoAnalysedDates", (data: string[]) => {
-    const dates = data.map((date) => {
-      return {
-        value: date,
-        label: date,
-      };
-    });
-    setData(dates);
-  });
+  // emitter.addListener("RepoAnalysedDates", (data: storedRepos) => {
+  //   const dates = data.map((date) => {
+  //     return {
+  //       value: date,
+  //       label: date,
+  //     };
+  //   });
+  //   setData(dates);
+  // });
 
-  const changeRepoDateAnalysis = (date: string) => {
-    emitter.emit("RepoDateAnalaysisChange", state.repos[date]);
-  };
+  // emitter.addListener('RepoAnalysis', (repoName: string) => {
+  //   setRepoName(repoName);
 
-  const changeRepo = (repoName: string) => {
-    // state.repos
-    // emitter.emit("RepoDateAnalaysisChange", state.repos[date]);
-  };
+  //   const repoCommitDates
+  // })
+
+  // const changeRepoDateAnalysis = (date: string) => {
+  //   emitter.emit("RepoDateAnalaysisChange", state.repos[date]);
+  // };
+
+  // const changeRepo = (repoName: string) => {
+  //   state.repos
+  //   emitter.emit("RepoDateAnalaysisChange", state.repos[date]);
+  // };
 
   const onRepoUpload = () => {
     if (inputRepo.current) {
@@ -43,12 +49,15 @@ export default function LeftBar() {
     }
   };
 
-  function changeRepoName() {
+  async function changeRepoName() {
     const uploadedFile = inputRepo.current;
     if (uploadedFile) {
-      setRepoName(uploadedFile!.files![0].name.replace(".zip", ""));
+      const filename = uploadedFile!.files![0].name.replace(".zip", "")
+      setRepoName(filename);
       emitter.emit("RepoAnalysing");
-      UploadService(uploadedFile!.files![0], dispatch);
+      await repoDates(uploadedFile!.files![0], filename)
+      const myData = JSON.parse(sessionStorage.getItem(filename)!)
+      setDates(Object.keys(myData.repoDates))
     }
   }
 
@@ -82,7 +91,8 @@ export default function LeftBar() {
           <Divider />
           <div className="p-3 flex flex-row justify-between bg-Secondary">
             <p className="text-[26px] text-[#495057] ">Add Repo</p>
-            <button onClick={() => onRepoUpload()}>
+            <button 
+              onClick={() => onRepoUpload()}>
               <Image src="assets/plus-icon.svg" width={25} height={25} alt="" />
               <input
                 type="file"
@@ -122,7 +132,7 @@ export default function LeftBar() {
                 variant="filled"
                 radius="md"
                 size="md"
-                onChange={(value) => changeRepoDateAnalysis(value!)}
+                // onChange={(value) => changeRepoDateAnalysis(value!)}
                 style={{ width: "100%" }}
               />
               <Select
@@ -133,7 +143,7 @@ export default function LeftBar() {
                 variant="filled"
                 radius="md"
                 size="md"
-                onChange={(value) => changeRepoDateAnalysis(value!)}
+                // onChange={(value) => changeRepoDateAnalysis(value!)}
                 style={{ width: "100%" }}
               />
             </div>

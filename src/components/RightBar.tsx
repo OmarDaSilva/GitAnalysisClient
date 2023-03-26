@@ -10,7 +10,7 @@ export default function RightBar() {
         <Paper shadow="md" radius="lg" p="xl">
           <div className="bg-Secondary p-3 flex flex-row justify-between ">
             <p className="text-[20px] text-[#495057]">
-              Signifcant Events: Merge
+              Signifcant Event: Merge
             </p>
           </div>
           <Divider />

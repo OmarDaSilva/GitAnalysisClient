@@ -9,31 +9,35 @@ import Image from "next/image";
 
 export default function VisualRepo() {
   const [data, setData] = useState(null);
-  const [date, setDate] = useState(false);
+  const [currentDate, setCurrentDate] = useState(false);
+  const [dates, setDates] = useState(false);
+  const [dateAnalysis, setDateAnalysis] = useState(null);
   const [showLoader, toggleLoader] = useState(false);
   const { state, dispatch } = useContext(ReposContext);
 
-  let currentDate;
-
   emitter.addListener("RepoAnalaysed", (data) => {
     setData(data);
+    const dates = Object.keys(data);
+    setCurrentDate(dates[0]);
+    setDates(dates);
+    setDateAnalysis(data[dates[0]]);
   });
 
-  emitter.addListener("RepoAnalysing", () => {
-    toggleLoader(true);
-  });
+  // emitter.addListener("RepoAnalysing", () => {
+  //   toggleLoader(true);
+  // });
 
-  emitter.addListener("RepoDateAnalaysisChange", (data) => {
-    toggleLoader(true);
-    setDate(true);
-    setData(data);
-  });
+  // emitter.addListener("RepoDateAnalaysisChange", (data) => {
+  //   toggleLoader(true);
+  //   setDate(true);
+  //   setData(data);
+  // });
 
   useEffect(() => {
-    if (data) {
+    if (dateAnalysis) {
       toggleLoader(false);
 
-      const chart = ForceGraph(data, {
+      const chart = ForceGraph(dateAnalysis, {
         nodeId: (d) => d.id,
         nodeName: (d) => d.name,
         nodeGroup: (d) => d.group,
@@ -79,31 +83,38 @@ export default function VisualRepo() {
       </div>
 
       <div className="grid grid-cols-1 gap-5 mt-5">
-        <div className="flex justify-center">Current Date:</div>
+        <div className="flex justify-center">
+          Current Date: {currentDate ?? ""}
+        </div>
+        
+
 
         <div className="flex flex-col">
           <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 flex flex-row">
             <div
               className="bg-blue-600 h-2.5 rounded-full"
               style={{ width: "30%" }}
-            ></div>
+            >
+              <div className="
+              w-[3px] h-[15px]"></div>
+            </div>
             <div
               className="bg-purple-600 h-2.5 rounded-full dark:bg-purple-500"
               style={{ width: "40%" }}
             ></div>
           </div>
         </div>
-        
-        <div className="w-[100%] flex justify-center">
-        <div className="flex justify-between w-[50%]">
-          <Image src="/assets/backward.svg" width={30} height={30} />
-          <Image src="/assets/rewind.svg" width={30} height={30} />
-          <Image src="/assets/pause.svg" width={30} height={30} />
-          <Image src="/assets/play.svg" width={30} height={30} />
-          <Image src="/assets/flash forward.svg" width={30} height={30} />
 
-          <Image src="/assets/forward.svg" width={30} height={30} />
-        </div>
+        <div className="w-[100%] flex justify-center">
+          <div className="flex justify-between w-[50%]">
+            <Image src="/assets/backward.svg" width={30} height={30} />
+            <Image src="/assets/rewind.svg" width={30} height={30} />
+            <Image src="/assets/pause.svg" width={30} height={30} />
+            <Image src="/assets/play.svg" width={30} height={30} />
+            <Image src="/assets/flash forward.svg" width={30} height={30} />
+
+            <Image src="/assets/forward.svg" width={30} height={30} />
+          </div>
         </div>
       </div>
     </div>

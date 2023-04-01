@@ -17,6 +17,7 @@ import { ReposContext, storedRepos } from "../pages";
 import { useForm } from "@mantine/form";
 import * as validUrl from "valid-url";
 
+
 import useRepoLocalStorage from "../hooks/useRepoDates";
 import LocalRepoData from "../types/LocalRepoData.type";
 
@@ -25,6 +26,7 @@ interface FromValues {
   branch: string;
   fromDate: string;
   toDate: string;
+  config: File | null;
 }
 
 export default function LeftBar() {
@@ -50,6 +52,16 @@ export default function LeftBar() {
   const onRepoUpload = async (values: FromValues) => {
     setLoading(true);
     if (values.branch != "" && values.toDate != "") {
+
+      // const response = await fetch('/api/repoDelta', {
+      //   method: 'POST',
+      //   body: JSON.stringify({
+      //     url: values.repoURL,
+      //     branch: values.branch,
+      //     deltaDates: { start: values.fromDate, finish: values.toDate }
+      //   })
+      // })
+
       let response = await analyseRepoDeltaDates(
         values.repoURL,
         { start: values.fromDate, finish: values.toDate },
@@ -57,8 +69,15 @@ export default function LeftBar() {
         dispatch
       );
       if (response) {
-        const { repoURL, repoDates } = response;
-        emitter.emit("RepoAnalaysed", repoDates);
+        const { repoURL, repoDates } = response
+        // const dayInformation = repoDates.commitsByDay
+        emitter.emit("RepoAnalaysed", repoDates.cleanData);
+        emitter.emit("commitsByDay", repoDates.commitsByDay)
+
+
+        if (values.config) {
+          let keys = repoDates;
+        }
       }
     } else {
       let { repoName, dates, branches, main } = await repoDates(
@@ -86,6 +105,7 @@ export default function LeftBar() {
       branch: "",
       fromDate: "",
       toDate: "",
+      config: null as File | null,
     },
     validate: {
       repoURL: (value) => (validUrl.isHttpsUri(value) ? null : "invalid url"),
@@ -225,6 +245,30 @@ export default function LeftBar() {
                 Analyse
               </Button>
             </Group>
+
+            <Divider />
+
+            <div className="my-5">
+              <div className="mt-5 mb-5">Configuration</div>
+              <input
+                type="file"
+                onChange={(event) => {
+                  const file =
+                    event.currentTarget.files && event.currentTarget.files[0];
+                  form.setFieldValue("config", file || null);
+                }}
+                name="uploadFile"
+                accept=".json"
+              />
+
+              <div className="flex justify-center">
+                <Button variant="white" type="submit">
+                  Add Config
+                </Button>
+              </div>
+            </div>
+
+
           </form>
         </div>
       </Paper>

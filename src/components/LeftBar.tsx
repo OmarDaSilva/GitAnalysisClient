@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { useContext, useEffect, useRef, useState } from "react";
+import { use, useContext, useEffect, useRef, useState } from "react";
 // import UploadService from "../services/UploadService";
 import { analyseRepoDeltaDates, repoDates } from "../services/UploadService";
 import emitter from "../eventemitter";
@@ -17,9 +17,16 @@ import { ReposContext, storedRepos } from "../pages";
 import { useForm } from "@mantine/form";
 import * as validUrl from "valid-url";
 
-
 import useRepoLocalStorage from "../hooks/useRepoDates";
 import LocalRepoData from "../types/LocalRepoData.type";
+import { useRecoilState } from "recoil";
+import {
+  repoStoreItemFamily,
+  CurrentRepoKeyState,
+  RepoKeysState,
+  repoDatesState,
+  repoSelector,
+} from "../atoms";
 
 interface FromValues {
   repoURL: string;
@@ -46,22 +53,22 @@ export default function LeftBar() {
   let toDateRef = useRef<string | null>(null);
   // let urlRef = useRef<string | null>(null);
 
+  // const [itemId, setItemId] = useState(null)
+  // const [repoStoreItem, setRepoStoreItem] = useRecoilState(repoStoreItemFamily(0));
+  const [repoKeys, setRepoKeysState] = useRecoilState(RepoKeysState);
+  const [currentRepoKey, setCurrentRepoKey] =
+    useRecoilState(CurrentRepoKeyState);
+  const [repoStore, setRepoStoreItemState] = useRecoilState(
+    repoStoreItemFamily(currentRepoKey)
+  );
+  const [repoSelectorValue, setRepoSelector] = useRecoilState(repoSelector);
+
   const [showDateMenu, toggleDateMenu] = useState(false);
   const { state, dispatch } = useContext(ReposContext);
 
   const onRepoUpload = async (values: FromValues) => {
     setLoading(true);
     if (values.branch != "" && values.toDate != "") {
-
-      // const response = await fetch('/api/repoDelta', {
-      //   method: 'POST',
-      //   body: JSON.stringify({
-      //     url: values.repoURL,
-      //     branch: values.branch,
-      //     deltaDates: { start: values.fromDate, finish: values.toDate }
-      //   })
-      // })
-
       let response = await analyseRepoDeltaDates(
         values.repoURL,
         { start: values.fromDate, finish: values.toDate },
@@ -69,15 +76,12 @@ export default function LeftBar() {
         dispatch
       );
       if (response) {
-        const { repoURL, repoDates } = response
+        const { repoURL, repoDates } = response;
         // const dayInformation = repoDates.commitsByDay
         emitter.emit("RepoAnalaysed", repoDates.cleanData);
-        emitter.emit("commitsByDay", repoDates.commitsByDay)
-
-
-        if (values.config) {
-          let keys = repoDates;
-        }
+        emitter.emit("commitsByDay", repoDates.commitsByDay);
+        let repoKey = repoName;
+        setRepoSelector({ repoKey, repoDates, repoName });
       }
     } else {
       let { repoName, dates, branches, main } = await repoDates(
@@ -267,8 +271,6 @@ export default function LeftBar() {
                 </Button>
               </div>
             </div>
-
-
           </form>
         </div>
       </Paper>

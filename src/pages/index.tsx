@@ -4,6 +4,7 @@ import LeftBar from "../components/LeftBar";
 import VisualRepo from "../components/VisualRepo";
 import RightBar from "../components/RightBar";
 import { createContext, useState, useReducer } from "react";
+import { RecoilRoot, atom, selector, useRecoilState, useRecoilValue } from "recoil";
 
 export type storedRepos = {
   [key: string]: {
@@ -94,18 +95,20 @@ export default function Home() {
   
   return (
     <>
-    <CurrentRepoContext.Provider value={{currentRepoState, currentRepoDispatch}}>
-      <ReposContext.Provider value={{ state, dispatch }}>
-        <Head>
-          <title>Git Visuals</title>
-        </Head>
-        <main className="flex flex-row justify-between">
-          <LeftBar />
-          <VisualRepo />
-          <RightBar />
-        </main>
-      </ReposContext.Provider>
-    </CurrentRepoContext.Provider>
+    <RecoilRoot>
+      <CurrentRepoContext.Provider value={{currentRepoState, currentRepoDispatch}}>
+        <ReposContext.Provider value={{ state, dispatch }}>
+          <Head>
+            <title>Git Visuals</title>
+          </Head>
+          <main className="flex flex-row justify-between">
+            <LeftBar />
+            <VisualRepo />
+            <RightBar />
+          </main>
+        </ReposContext.Provider>
+      </CurrentRepoContext.Provider>
+    </RecoilRoot>
     </>
   );
 }

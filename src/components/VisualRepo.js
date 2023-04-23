@@ -65,7 +65,7 @@ export default function VisualRepo() {
       <LoadingOverlay visible={showLoader} overlayBlur={2} />
       <div id="graph" className="bg-white border-[#e6e6e6] border-2	">
         {!data ? (
-          <div className="text-black">Upload a rpository to get started</div>
+          <div className="text-black">Upload a repository to get started</div>
         ) : null}
       </div>
       <VideoController />

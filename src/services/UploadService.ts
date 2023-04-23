@@ -27,9 +27,9 @@ interface config {
 
 export async function analyseRepoDeltaDates(
   repoURL: string,
-  delta: delta,
   branch: string,
-  config: File | null
+  config: File | null,
+  selectedDates: string[]
 ) {
   if (process.env.NEXT_PUBLIC_REPO_ANALYSIS_DELTA_ROUTE) {
     try {
@@ -41,8 +41,8 @@ export async function analyseRepoDeltaDates(
       const payload = {
         url: repoURL,
         branch: branch,
-        deltaDates: delta,
         config: configData,
+        selectedDates: selectedDates
       };
 
       const analysisResponse = await fetch(

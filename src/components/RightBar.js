@@ -1,4 +1,5 @@
-import { Divider, Paper } from "@mantine/core";
+import { useRef } from "react";
+import { Divider, Paper, TextInput } from "@mantine/core";
 import { useEffect, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 import {
@@ -32,6 +33,7 @@ export default function RightBar() {
     FileColourLegendState
   );
   const storeItem = useRecoilValue(repoStoreItemFamily(repoKeyState));
+  const searchRef = useRef(null)
 
   const sortExtensionColours = (extensionList) => {
     const extensionDict = {};
@@ -53,6 +55,12 @@ export default function RightBar() {
 
     return extensionDict;
   };
+
+  const searchForNode = () => {
+    console.log(searchRef.current.value);
+    const event = new CustomEvent("scrollToNode", { detail: { nodeName: searchRef.current.value } });
+    window.dispatchEvent(event);
+  }
 
   useEffect(() => {
     if (storeItem?.commitsByDay) {
@@ -95,6 +103,21 @@ export default function RightBar() {
                   })
                 : null}
             </div>
+          </div>
+
+          <Divider />
+
+          <div>
+            <p>Search</p>
+            <TextInput
+              label="Search for File/Directory"
+              ref={searchRef}
+            />
+            <button onClick={searchForNode}>
+              Submit
+            </button>
+            
+
           </div>
 
           <Divider />

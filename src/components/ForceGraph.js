@@ -87,6 +87,9 @@ export default function ForceGraph({
     .attr("height", height)
     .attr("viewBox", [-width / 2, -height / 2, width, height])
     .attr("style", "max-width: 100%; height: 100%; height: intrinsic;");
+
+    svg.property("currentScale", 1);
+
     
       const simulation = d3.forceSimulation(nodes)
           .force("link", forceLink)
@@ -116,7 +119,7 @@ export default function ForceGraph({
       .selectAll("circle")
       .data(nodes)
       .join("circle")
-        .attr("r", nodeRadius)
+        .attr("r", d => d.name === "root" ? 30 : d.colour === "DarkBlue" ? 25 : nodeRadius)
         .attr("fill", d => colourScale(d.colour))
         .call(drag(simulation));
   
@@ -126,6 +129,7 @@ export default function ForceGraph({
     .scaleExtent([0.1, 10]) // This determines the min and max zoom scale
     .on("zoom", (event) => {
         g.attr("transform", event.transform);
+        svg.property("currentScale", event.transform.k);
     });
 
     svg.call(zoom);
@@ -137,6 +141,76 @@ export default function ForceGraph({
     // if (G) node.attr("fill", ({index: i}) => color(G[i])); // This assigns the node group colours
     if (T) node.append("title").text(({index: i}) => T[i]);
     if (invalidation != null) invalidation.then(() => simulation.stop());
+
+    let targetNodeName, targetNodeElement, originalRadius, originalColor;
+
+    window.addEventListener("scrollToNode", (event) => {
+      targetNodeName = event.detail.nodeName;
+      targetNodeElement = node.filter(d => d.name === targetNodeName);
+      originalRadius = targetNodeElement.attr("r");
+      originalColor = targetNodeElement.attr("fill");
+    
+      highlightNode(targetNodeElement);
+    
+      const targetZoomLevel = 2;
+    
+      svg.transition()
+        .duration(1000)
+        .call(zoom.scaleTo, targetZoomLevel)
+        .on("end", () => {
+          scrollToTargetNode();
+        });
+    });
+    
+
+    function scrollToTargetNode() {
+      if (targetNodeName) {
+        const targetNode = nodes.find(d => d.name === targetNodeName);
+        const targetX = targetNode.x;
+        const targetY = targetNode.y;
+    
+        svg.transition()
+          .duration(1000)
+          .call(
+            zoom.transform,
+            d3.zoomIdentity.translate(
+              targetX,
+              targetY
+            )
+          )
+          .on("end", () => {
+            resetNodeAppearance(targetNodeElement, originalRadius, originalColor);
+            targetNodeName = null;
+          });
+      }
+    }
+    
+    function ticked() {
+      link
+        .attr("x1", d => d.source.x)
+        .attr("y1", d => d.source.y)
+        .attr("x2", d => d.target.x)
+        .attr("y2", d => d.target.y);
+    
+      node
+        .attr("cx", d => d.x)
+        .attr("cy", d => d.y);
+    }
+
+    function highlightNode(node) {
+      node
+        .attr("r", d => d.name === "root" ? 30 : d.colour === "DarkBlue" ? 25 : nodeRadius * 1.5)
+        .attr("stroke-width", nodeStrokeWidth * 2);
+    }
+    
+    function resetNodeAppearance(nodeElement, originalRadius, originalColor) {
+      setTimeout(() => {
+        nodeElement
+          .attr("r", originalRadius) // Reset the size of the node
+          .attr("fill", originalColor) // Reset the color of the node
+          .attr("stroke-width", nodeStrokeWidth)
+      }, 3000); // Duration in milliseconds before resetting the appearance
+    }
   
     function intern(value) {
       return value !== null && typeof value === "object" ? value.valueOf() : value;
@@ -196,3 +270,5 @@ export default function ForceGraph({
   
     return Object.assign(svg.node(), {scales: {color}});
   }
+
+  

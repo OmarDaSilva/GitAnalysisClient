@@ -49,6 +49,11 @@ export const SignificantEventsState = atom({
   default: null
 })
 
+export const VideoSpeedState = atom({
+  key: "VideoSpeedState",
+  default: 4000
+})
+
 export const repoSelector = selector({
   key: 'repoSelector',
   get: ({get}) => {

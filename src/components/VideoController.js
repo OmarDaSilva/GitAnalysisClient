@@ -9,10 +9,11 @@ import {
   VideoControllerNextDateKeyState,
   progressSelector,
   SignificantEventsState,
+  VideoSpeedState,
 } from "../atoms";
 
 import getMarkerPosition from "/src/utils/VideoControllerUtils";
-import { Tooltip } from "@mantine/core";
+import { NumberInput, Tooltip } from "@mantine/core";
 
 export default function VideoController({ dates }) {
   const [currentDateRecoil, setCurrentDateRecoil] =
@@ -24,10 +25,9 @@ export default function VideoController({ dates }) {
   );
   const [videoControllerNextDateKey, setVideoControllerNextDateKey] =
     useRecoilState(VideoControllerNextDateKeyState);
-  // const [nextDateKey, setVideoControllerNextDateKey] = useState(0);
   const percentage = useRecoilValue(progressSelector);
   const significantEvents = useRecoilValue(SignificantEventsState);
-  const [key, setKey] = useState(0);
+  const [videoSpeed, setVideoSpeedState] = useRecoilState(VideoSpeedState);
 
   const onPlay = async () => {
     setVideoControllerState(true);
@@ -82,7 +82,7 @@ export default function VideoController({ dates }) {
         }
 
         console.log(videoControllerNextDateKey);
-      }, 4000);
+      }, videoSpeed);
 
       return () => clearInterval(visualInterval);
     }
@@ -177,6 +177,20 @@ export default function VideoController({ dates }) {
             onClick={onEnd}
           />
         </div>
+        <div className="w-[100px] ml-9">
+            <NumberInput 
+              label="Video Speed in MS" 
+              defaultValue={4000}
+              min={1000}
+              step={100}
+              onChange={
+                val => {
+                  setVideoSpeedState(val)
+                }
+              }
+              />
+        </div>
+
       </div>
     </div>
   );

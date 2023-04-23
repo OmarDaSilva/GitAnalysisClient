@@ -1,37 +1,29 @@
 import { useRef, useState } from "react";
-// import UploadService from "../services/UploadService";
 import { analyseRepoDeltaDates, repoDates } from "../services/UploadService";
-import emitter from "../eventemitter";
 import {
   Button,
   Divider,
   Group,
   LoadingOverlay,
+  MultiSelect,
   Paper,
   Select,
   TextInput,
   Tooltip,
 } from "@mantine/core";
-import { ReposContext } from "../pages";
 import { useForm } from "@mantine/form";
 import * as validUrl from "valid-url";
-
 import { useRecoilState } from "recoil";
 import {
   repoStoreItemFamily,
   CurrentRepoKeyState,
   RepoKeysState,
-  repoDatesState,
   repoSelector,
-  // ConfigState,
 } from "../atoms";
-import { log } from "console";
-
 interface FromValues {
   repoURL: string;
   branch: string;
-  fromDate: string;
-  toDate: string;
+  selectedDates: string[] | null;
   config: File | null;
 }
 
@@ -51,36 +43,23 @@ export default function LeftBar() {
     repoStoreItemFamily(currentRepoKey)
   );
   const [repoSelectorValue, setRepoSelector] = useRecoilState(repoSelector);
-  // const [configStateValue, setConfigState] = useRecoilState(ConfigState)
-  // const reader = new FileReader();
-  // reader.addEventListener(
-  //   "load",
-  //   () => {
-  //     // this will then display a text file
-      
-  //     setSignifcantEvents(reader.result)
-  //   },
-  //   false
-  // );
-
 
   const onRepoUpload = async (values: FromValues) => {
     setLoading(true);
-    if (values.branch != "" && values.toDate != "") {
-
-
-      let config = values.config
+    if (values.branch != "" && values.selectedDates) {
+      let config = values.config;
 
       let response = await analyseRepoDeltaDates(
         values.repoURL,
-        { start: values.fromDate, finish: values.toDate },
-        values.branch, config ?? null
+        values.branch,
+        config ?? null,
+        values.selectedDates
       );
       if (response) {
         const { repoURL, repoDates } = response;
-        let repoKey = repoName
-       
-        let events = repoDates?.significantEvents
+        let repoKey = repoName;
+
+        let events = repoDates?.significantEvents;
         setRepoSelector({ repoKey, repoDates, repoName, events });
       }
     } else {
@@ -94,37 +73,19 @@ export default function LeftBar() {
       form.setFieldValue("branch", main);
       setCurrentBranch(main);
       setRequired(true);
-      // sessionStorage.setItem(String(repoName) +  String(main), JSON.stringify(Object.keys(dates)))
-      // currentBranchRef.current = main;
-      // console.log(response);
     }
     setLoading(false);
   };
-
-  // const changeBranch = async (branchName: string) => {};
 
   const form = useForm({
     initialValues: {
       repoURL: "",
       branch: "",
-      fromDate: "",
-      toDate: "",
+      selectedDates: null as string[] | null,
       config: null as File | null,
     },
     validate: {
       repoURL: (value) => (validUrl.isHttpsUri(value) ? null : "invalid url"),
-      fromDate: (value) => {
-        if (toDateRef.current == "") {
-          return null;
-        } else if (new Date(value) > new Date(toDateRef.current!)) {
-          return "From Date, must not be greater than to Date";
-        }
-      },
-      toDate: (value) => {
-        if (new Date(value) < new Date(fromDateRef.current!)) {
-          return "To Date, must not be less than From Date";
-        }
-      },
     },
   });
 
@@ -217,39 +178,18 @@ export default function LeftBar() {
             <Divider />
             <div>
               <div className="bg-Secondary p-3 grid grid-row-2 gap-3 justify-between">
-                <Select
-                  disabled={!dates}
+                <MultiSelect
                   data={dates ?? []}
-                  placeholder="Repository date"
-                  label="From"
-                  variant="filled"
-                  radius="md"
-                  size="md"
-                  required={required}
-                  // onChange={(value) => changeRepoDateAnalysis(value!)}
-                  style={{ width: "100%" }}
-                  // {...form.getInputProps("fromDate")}
-                  onChange={(value) => {
-                    form.setFieldValue("fromDate", value!);
-                    fromDateRef.current = value;
-                  }}
-                />
-                <Select
-                  disabled={!dates}
-                  data={dates ?? []}
-                  placeholder="Repository date"
-                  label="To"
-                  variant="filled"
-                  radius="md"
-                  size="md"
-                  required={required}
-                  // onChange={(value) => changeRepoDateAnalysis(value!)}
-                  style={{ width: "100%" }}
-                  // {...form.getInputProps("toDate")}
-                  onChange={(value) => {
-                    form.setFieldValue("toDate", value!);
-                    toDateRef.current = value;
-                  }}
+                  label="Select dates"
+                  placeholder="Scroll to see all options"
+                  dropdownComponent="div"
+                  maxDropdownHeight={200}
+                  maxSelectedValues={10}
+                  searchable
+                  limit={20}
+                  onChange={(value) =>
+                    form.setFieldValue("selectedDates", value)
+                  }
                 />
               </div>
             </div>

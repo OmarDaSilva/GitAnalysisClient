@@ -1,27 +1,25 @@
-import {
-  Divider,
-  Drawer,
-  Group,
-  Paper,
-  Button,
-  Title,
-  Tooltip,
-} from "@mantine/core";
-import { useDisclosure } from "@mantine/hooks";
-import emitter from "../eventemitter";
+import { Divider, Paper } from "@mantine/core";
 import { useEffect, useState } from "react";
-import { emit } from "process";
 import { useRecoilState, useRecoilValue } from "recoil";
 import {
   currentDateState,
   repoStoreItemFamily,
   CurrentRepoKeyState,
+  FileColourLegendState,
 } from "../atoms";
 
-const label =
-  "Upload a JSON file to exclude directories nodes in the view" +
-  " and/or " +
-  " mark signifcant events in the progress bar";
+const dict = {
+  0: "#FFA500",
+  1: "#32CD32",
+  2: "#FF69B4",
+  3: "#8A2BE2",
+  4: "#00FFFF",
+  5: "#FFD700",
+  6: "#D2691E",
+  7: "#ADFF2F",
+  8: "#FF4500",
+  9: "#BA55D3",
+};
 
 export default function RightBar() {
   const [contributors, setContributors] = useState(null);
@@ -30,7 +28,31 @@ export default function RightBar() {
   const [currentDate, setCurrentDate] = useRecoilState(currentDateState);
   const [repoKeyState, setCurrentRepoKeyState] =
     useRecoilState(CurrentRepoKeyState);
+  const [fileColourLegend, setFileColourLegendState] = useRecoilState(
+    FileColourLegendState
+  );
   const storeItem = useRecoilValue(repoStoreItemFamily(repoKeyState));
+
+  const sortExtensionColours = (extensionList) => {
+    const extensionDict = {};
+
+    let extensionsKeys = Object.entries(extensionList);
+
+    for (const [key, value] of extensionsKeys) {
+      if (extensionDict[value.indexOfExtension] == undefined) {
+        extensionDict[value.indexOfExtension] = {
+          extensions: [key],
+          total: value.totalNumber,
+        };
+      } else {
+        extensionDict[value.indexOfExtension].extensions.push(key);
+        extensionDict[value.indexOfExtension].total =
+          extensionDict[value.indexOfExtension].total + value.totalNumber;
+      }
+    }
+
+    return extensionDict;
+  };
 
   useEffect(() => {
     if (storeItem?.commitsByDay) {
@@ -38,6 +60,10 @@ export default function RightBar() {
         Object.keys(storeItem.commitsByDay[currentDate].contributors)
       );
       setcommitShas(storeItem.commitsByDay[currentDate].commitShas);
+      let fileColourLegend = sortExtensionColours(
+        storeItem.cleanData.fileIndex[currentDate]
+      );
+      setFileColourLegendState(fileColourLegend);
     }
   }, [storeItem, currentDate]);
 
@@ -50,8 +76,31 @@ export default function RightBar() {
             <div className="bg-Primary">Hello</div>
           </div>
           <Divider />
+
           <div className="bg-Secondary p-3 flex flex-col justify-between ">
-            <p className="text-[20px] text-[#495057] mb-3">Commits </p>
+            <p className="text-[20px] text-[#495057] mb-3">File colours</p>
+            <div className="bg-Primary">
+              {fileColourLegend
+                ? Object.entries(fileColourLegend).map(([key, value]) => {
+                    return (
+                      <div className="text-right" style={{ backgroundColor: dict[key] }}>
+                        <p>
+                          {value.extensions.toString()}
+                        </p>
+                        <p>
+                          {value.total}
+                        </p>
+                        </div>
+                    );
+                  })
+                : null}
+            </div>
+          </div>
+
+          <Divider />
+
+          <div className="bg-Secondary p-3 flex flex-col justify-between ">
+            <p className="text-[20px] text-[#495057] mb-3">Commit </p>
             {commitShas
               ? commitShas.map((value) => {
                   return (
@@ -61,6 +110,8 @@ export default function RightBar() {
               : null}
           </div>
           <Divider />
+          {
+
           <div className="bg-Secondary p-3 flex flex-col justify-between ">
             <p className="text-[20px] text-[#495057] mb-3">Contributors </p>
             {contributors
@@ -69,6 +120,7 @@ export default function RightBar() {
                 })
               : null}
           </div>
+          }
           <Divider />
           <Divider />
         </Paper>

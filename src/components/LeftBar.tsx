@@ -1,5 +1,4 @@
-import Image from "next/image";
-import { use, useContext, useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 // import UploadService from "../services/UploadService";
 import { analyseRepoDeltaDates, repoDates } from "../services/UploadService";
 import emitter from "../eventemitter";
@@ -13,12 +12,10 @@ import {
   TextInput,
   Tooltip,
 } from "@mantine/core";
-import { ReposContext, storedRepos } from "../pages";
+import { ReposContext } from "../pages";
 import { useForm } from "@mantine/form";
 import * as validUrl from "valid-url";
 
-import useRepoLocalStorage from "../hooks/useRepoDates";
-import LocalRepoData from "../types/LocalRepoData.type";
 import { useRecoilState } from "recoil";
 import {
   repoStoreItemFamily,
@@ -26,7 +23,9 @@ import {
   RepoKeysState,
   repoDatesState,
   repoSelector,
+  // ConfigState,
 } from "../atoms";
+import { log } from "console";
 
 interface FromValues {
   repoURL: string;
@@ -38,23 +37,13 @@ interface FromValues {
 
 export default function LeftBar() {
   const [repoName, setRepoName] = useState<string | null>("Repository");
-  // const [repoURL, setRepoURL] = useState("");
   const [dates, setDates] = useState<null | string[]>(null);
   const [branches, setBranches] = useState<null | string[]>(null);
   const [currentBranch, setCurrentBranch] = useState<null | string>(null);
   const [loading, setLoading] = useState(false);
-  // const [fromDate, setFromDate] = useState<null | string>(null);
-  // const [toDate, setToDate] = useState<null | string>(null);
   const [required, setRequired] = useState<boolean>(false);
-
-  // let disableAnalyseButton = useRef<boolean>(true);
-  // let currentBranchRef = useRef<string | null>(null);
   let fromDateRef = useRef<string | null>(null);
   let toDateRef = useRef<string | null>(null);
-  // let urlRef = useRef<string | null>(null);
-
-  // const [itemId, setItemId] = useState(null)
-  // const [repoStoreItem, setRepoStoreItem] = useRecoilState(repoStoreItemFamily(0));
   const [repoKeys, setRepoKeysState] = useRecoilState(RepoKeysState);
   const [currentRepoKey, setCurrentRepoKey] =
     useRecoilState(CurrentRepoKeyState);
@@ -62,26 +51,37 @@ export default function LeftBar() {
     repoStoreItemFamily(currentRepoKey)
   );
   const [repoSelectorValue, setRepoSelector] = useRecoilState(repoSelector);
+  // const [configStateValue, setConfigState] = useRecoilState(ConfigState)
+  // const reader = new FileReader();
+  // reader.addEventListener(
+  //   "load",
+  //   () => {
+  //     // this will then display a text file
+      
+  //     setSignifcantEvents(reader.result)
+  //   },
+  //   false
+  // );
 
-  const [showDateMenu, toggleDateMenu] = useState(false);
-  const { state, dispatch } = useContext(ReposContext);
 
   const onRepoUpload = async (values: FromValues) => {
     setLoading(true);
     if (values.branch != "" && values.toDate != "") {
+
+
+      let config = values.config
+
       let response = await analyseRepoDeltaDates(
         values.repoURL,
         { start: values.fromDate, finish: values.toDate },
-        values.branch,
-        dispatch
+        values.branch, config ?? null
       );
       if (response) {
         const { repoURL, repoDates } = response;
-        // const dayInformation = repoDates.commitsByDay
-        emitter.emit("RepoAnalaysed", repoDates.cleanData);
-        emitter.emit("commitsByDay", repoDates.commitsByDay);
-        let repoKey = repoName;
-        setRepoSelector({ repoKey, repoDates, repoName });
+        let repoKey = repoName
+       
+        let events = repoDates?.significantEvents
+        setRepoSelector({ repoKey, repoDates, repoName, events });
       }
     } else {
       let { repoName, dates, branches, main } = await repoDates(
@@ -127,6 +127,17 @@ export default function LeftBar() {
       },
     },
   });
+
+  const readFileAsync = (file: File) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        resolve(reader.result);
+      };
+      reader.onerror = reject;
+      reader.readAsText(file);
+    });
+  };
 
   return (
     <div className="w-1/4 grid grid-rows-2 gap-3">
@@ -244,12 +255,6 @@ export default function LeftBar() {
             </div>
             <Divider />
 
-            <Group className="flex justify-center">
-              <Button variant="white" type="submit">
-                Analyse
-              </Button>
-            </Group>
-
             <Divider />
 
             <div className="my-5">
@@ -271,6 +276,14 @@ export default function LeftBar() {
                 </Button>
               </div>
             </div>
+
+            <Divider />
+
+            <Group className="flex justify-center">
+              <Button variant="white" type="submit">
+                Analyse
+              </Button>
+            </Group>
           </form>
         </div>
       </Paper>

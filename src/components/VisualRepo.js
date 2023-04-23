@@ -1,4 +1,3 @@
-
 import ForceGraph from "./ForceGraph";
 import Graphdata from "../data/data.json";
 import { useContext, useEffect, useState } from "react";
@@ -9,7 +8,11 @@ import Image from "next/image";
 import VideoController from "../components/VideoController";
 import emitter from "../eventemitter";
 import { useRecoilState, useResetRecoilState, useRecoilValue } from "recoil";
-import { CurrentRepoKeyState, repoStoreItemFamily, currentDateState } from "../atoms";
+import {
+  CurrentRepoKeyState,
+  repoStoreItemFamily,
+  currentDateState,
+} from "../atoms";
 
 export default function VisualRepo() {
   const [data, setData] = useState(null);
@@ -23,18 +26,20 @@ export default function VisualRepo() {
   const [currentDateRecoil, setCurrentDateRecoil] =
     useRecoilState(currentDateState);
 
-const [currentRepoKey, setCurrentRepoKey]  = useRecoilState(CurrentRepoKeyState)
-const [repoStore, setRepoStoreItemState] = useRecoilState(repoStoreItemFamily(currentRepoKey));
-const [currentDate, setCurrentDateState] = useRecoilState(currentDateState)
-const repoItem = useRecoilValue(repoStoreItemFamily(currentRepoKey))
-
+  const [currentRepoKey, setCurrentRepoKey] =
+    useRecoilState(CurrentRepoKeyState);
+  const [repoStore, setRepoStoreItemState] = useRecoilState(
+    repoStoreItemFamily(currentRepoKey)
+  );
+  const [currentDate, setCurrentDateState] = useRecoilState(currentDateState);
+  const repoItem = useRecoilValue(repoStoreItemFamily(currentRepoKey));
 
   const generateVisualAnalysis = (value) => {
     const chart = ForceGraph(value, {
       nodeId: (d) => d.id,
       nodeName: (d) => d.name,
       nodeGroup: (d) => d.group,
-      nodeTitle: (d) => `${d.name}\n${d.group}`,
+      nodeTitle: (d) => `${d.name }\n${d.group}`,
       linkStrokeWidth: (l) => Math.sqrt(l.value),
     });
 
@@ -48,40 +53,21 @@ const repoItem = useRecoilValue(repoStoreItemFamily(currentRepoKey))
     }
   };
 
-
-  emitter.addListener("onPlay", (value) => {
-    toggleLoader(true);
-    generateVisualAnalysis(value.data);
-    toggleLoader(false);
-  });
-
-  emitter.addListener("onRestart", (value) => {
-    if (value != null) {
-      toggleLoader(true);
-      generateVisualAnalysis(value.data);
-      setCurrentDate(value.key);
-      toggleLoader(false);
-    }
-  });
-
   useEffect(() => {
-    if (currentRepoKey) {      
-      generateVisualAnalysis(repoItem.cleanData[currentDate])
-      toggleLoader(false)
+    if (currentRepoKey) {
+      generateVisualAnalysis(repoItem.cleanData.dataFormatted[currentDate]);
+      toggleLoader(false);
     }
   }, [repoStore, currentDate]);
 
   return (
     <div className="w-3/4 p-4 pt-0 flex flex-col relative">
       <LoadingOverlay visible={showLoader} overlayBlur={2} />
-      {/* <Filter /> */}
       <div id="graph" className="bg-white border-[#e6e6e6] border-2	">
         {!data ? (
-          <div className="text-black">Upload a repository to get started</div>
+          <div className="text-black">Upload a rpository to get started</div>
         ) : null}
       </div>
-      // probably need to not define any props, cus the props change value,
-      hence cause this component to render,
       <VideoController />
     </div>
   );

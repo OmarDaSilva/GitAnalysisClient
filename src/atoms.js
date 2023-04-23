@@ -39,6 +39,16 @@ export const VideoControllerNextDateKeyState = atom({
   default: 0
 })
 
+export const FileColourLegendState = atom({
+  key: "FileColourLegendState", 
+  default: null
+})
+
+export const SignificantEventsState = atom({
+  key: "SignificantEventsState", 
+  default: null
+})
+
 export const repoSelector = selector({
   key: 'repoSelector',
   get: ({get}) => {
@@ -47,7 +57,7 @@ export const repoSelector = selector({
       repo: get(repoStoreItemFamily(key))
     }
   },
-  set: ({ set }, { repoKey, repoDates, repoName}) => {
+  set: ({ set }, { repoKey, repoDates, repoName, events }) => {
     set(RepoKeysState, (keys) => [...keys, repoKey])
     set(repoStoreItemFamily(repoKey), {
       id: repoKey,  
@@ -56,9 +66,10 @@ export const repoSelector = selector({
       repoName: repoKey
     })
     set(CurrentRepoKeyState, repoName)
-    let dates = Object.keys(repoDates.cleanData)
+    let dates = Object.keys(repoDates.cleanData.dataFormatted)
     set(repoDatesState, dates)
     set(currentDateState, dates[0])
+    set( SignificantEventsState, events)
   },
 });
 

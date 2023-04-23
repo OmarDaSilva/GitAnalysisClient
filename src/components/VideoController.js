@@ -7,8 +7,12 @@ import {
   repoDatesState,
   VideoControllerActiveState,
   VideoControllerNextDateKeyState,
-  progressSelector
+  progressSelector,
+  SignificantEventsState,
 } from "../atoms";
+
+import getMarkerPosition from "/src/utils/VideoControllerUtils";
+import { Tooltip } from "@mantine/core";
 
 export default function VideoController({ dates }) {
   const [currentDateRecoil, setCurrentDateRecoil] =
@@ -18,9 +22,11 @@ export default function VideoController({ dates }) {
   const [videoControllerState, setVideoControllerState] = useRecoilState(
     VideoControllerActiveState
   );
-  const [ videoControllerNextDateKey, setVideoControllerNextDateKey ] = useRecoilState(VideoControllerNextDateKeyState)
+  const [videoControllerNextDateKey, setVideoControllerNextDateKey] =
+    useRecoilState(VideoControllerNextDateKeyState);
   // const [nextDateKey, setVideoControllerNextDateKey] = useState(0);
   const percentage = useRecoilValue(progressSelector);
+  const significantEvents = useRecoilValue(SignificantEventsState);
   const [key, setKey] = useState(0);
 
   const onPlay = async () => {
@@ -28,7 +34,7 @@ export default function VideoController({ dates }) {
   };
 
   const onClickNext = () => {
-    if (videoControllerNextDateKey < dateKeys.length - 1) {  
+    if (videoControllerNextDateKey < dateKeys.length - 1) {
       setCurrentDate(dateKeys[videoControllerNextDateKey + 1]);
       setVideoControllerNextDateKey((val) => ++val);
     } else {
@@ -51,7 +57,7 @@ export default function VideoController({ dates }) {
 
   const onRestart = async () => {
     setVideoControllerNextDateKey(0);
-    setCurrentDate(dateKeys[0])
+    setCurrentDate(dateKeys[0]);
     // setPercentage(0)
   };
 
@@ -71,7 +77,7 @@ export default function VideoController({ dates }) {
           calculatePercenage(dateKeys.length, videoControllerNextDateKey);
         } else {
           setVideoControllerNextDateKey(0);
-          setCurrentDate(dateKeys[0])
+          setCurrentDate(dateKeys[0]);
           setVideoControllerState(false);
         }
 
@@ -80,13 +86,25 @@ export default function VideoController({ dates }) {
 
       return () => clearInterval(visualInterval);
     }
-  }, [videoControllerState, videoControllerNextDateKey]);
+  }, [
+    videoControllerState,
+    videoControllerNextDateKey,
+    SignificantEventsState,
+  ]);
 
   return (
     <div className="grid grid-cols-1 gap-5 mt-5">
       <div className="flex justify-center">
         {"Current Date: " + currentDateRecoil}
       </div>
+
+      {significantEvents
+        ? significantEvents[currentDateRecoil]
+          ? significantEvents[currentDateRecoil].events.map((event) => {
+              return <p>{event.eventComment}</p>;
+            })
+          : null
+        : null}
 
       {true ? (
         <div className="flex flex-col" id="progress-bar">
@@ -97,9 +115,24 @@ export default function VideoController({ dates }) {
             >
               <div className="w-[3px] h-[15px]"></div>
             </div>
-            {/* we need to insert a map that gets the significan events
-      and renders div at certain marks in the history corresponding
-      when that significant event occured */}
+            {significantEvents
+              ? Object.entries(significantEvents).map(([eventDate, events]) => {
+                  const eventLabels = events.events
+                    .map((event) => event.eventLabel)
+                    .join("\n");
+                  const position = getMarkerPosition(eventDate, dateKeys);
+
+                  return (
+                    <Tooltip label={eventLabels}>
+                      <div
+                        key={eventDate}
+                        className="absolute h-6 w-1 bg-red-500"
+                        style={{ left: `calc(${position}% )` }}
+                      ></div>
+                    </Tooltip>
+                  );
+                })
+              : null}
           </div>
         </div>
       ) : null}

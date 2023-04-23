@@ -19,6 +19,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.cjs", "**/*.mjs", "src/layout/Layout.jsx", "src/layout/Layout.js", "MantineColourConfig.js", "src/pages/_app.jsx", "tailwindConfigFile.ts", "src/modules/colors.js", "next.config.js", "src/components/VisualRepo.js", "src/components/VisualRepo.js", "src/services/VisualisationService.js", "src/components/RightBar.js"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.cjs", "**/*.mjs", "src/layout/Layout.jsx", "src/layout/Layout.js", "MantineColourConfig.js", "src/pages/_app.jsx", "tailwindConfigFile.ts", "src/modules/colors.js", "next.config.js", "src/components/VisualRepo.js", "src/components/VisualRepo.js", "src/services/VisualisationService.js", "src/components/RightBar.js", "src/atoms.js", "src/atoms.js"],
   "exclude": ["node_modules"]
 }

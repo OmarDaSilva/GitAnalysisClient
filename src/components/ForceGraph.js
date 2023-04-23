@@ -16,7 +16,7 @@ export default function ForceGraph({
     nodeStroke = "#fff", // node stroke color
     nodeStrokeWidth = 3, // node stroke width, in pixels
     nodeStrokeOpacity = 2, // node stroke opacity
-    nodeRadius = 5, // node radius, in pixels
+    nodeRadius = 15, // node radius, in pixels
     nodeStrength,
     linkSource = ({source}) => source, // given d in links, returns a node identifier string
     linkTarget = ({target}) => target, // given d in links, returns a node identifier string
@@ -43,7 +43,7 @@ export default function ForceGraph({
     const L = typeof linkStroke !== "function" ? null : d3.map(links, linkStroke);
   
     // Replace the input nodes and links with mutable objects for the simulation.
-    nodes = d3.map(nodes, (_, i) => ({id: N[i], colour: NC[i], name: NN[i]}));
+    nodes = d3.map(nodes, (_, i) => ({id: N[i], colour: NC[i], name: NN[i], fixed: false}));
     links = d3.map(links, (_, i) => ({source: LS[i], target: LT[i]}));
   
     // Compute default domains.
@@ -59,14 +59,26 @@ export default function ForceGraph({
       Light blue - files
       Grey - contributors
     */ 
+    // const colourScale = d3.scaleOrdinal()
+    // .domain(['darkblue', 'lightblue', 'grey', 'red'])
+    // .range(['#0529f5', '#059df5', '#505457', '#FF0000'])
+
     const colourScale = d3.scaleOrdinal()
-    .domain(['darkblue', 'lightblue', 'grey', 'red'])
-    .range(['#0529f5', '#059df5', '#505457', '#FF0000'])
+    .domain([
+        'Orange', 'LimeGreen', 'HotPink', 'BlueViolet', 
+        'Aqua', 'Gold', 'Chocolate', 'GreenYellow', 'OrangeRed', 
+        'MediumOrchid', 'Black', 'Red', 'DarkBlue', 'Grey'
+    ])
+    .range([
+      '#FFA500', '#32CD32', '#FF69B4', '#8A2BE2', '#00FFFF', 
+      '#FFD700', '#D2691E', '#ADFF2F', '#FF4500', '#BA55D3',
+      '#000000', '#FF0000', '#00008B', '#808080'
+    ]);
   
     // Construct the forces.
 
-    const forceNode = d3.forceManyBody().strength(-15);
-    const forceLink = d3.forceLink(links).id(({index: i}) => N[i]).distance(5);
+    const forceNode = d3.forceManyBody().strength(-150);
+    const forceLink = d3.forceLink(links).id(({index: i}) => N[i]).distance(100);
     if (nodeStrength !== undefined) forceNode.strength(nodeStrength);
     if (linkStrength !== undefined) forceLink.strength(linkStrength);
     
@@ -80,9 +92,14 @@ export default function ForceGraph({
           .force("link", forceLink)
           .force("charge", forceNode)
           .force("center",  d3.forceCenter())
+          // .alphaDecay(0.05) // Increase alpha decay (default is 0.0228)
+          .velocityDecay(0.5)
           .on("tick", ticked);
+
+    const g = svg.append("g")
+
     
-    const link = svg.append("g")
+    const link =  g.append("g")
         .attr("stroke", typeof linkStroke !== "function" ? linkStroke : null)
         .attr("stroke-opacity", linkStrokeOpacity)
         .attr("stroke-width", typeof linkStrokeWidth !== "function" ? linkStrokeWidth : null)
@@ -91,7 +108,7 @@ export default function ForceGraph({
       .data(links)
       .join("line");
   
-    const node = svg.append("g")
+    const node = g.append("g")
         // .attr("fill", d => colourScale(d.colour))
         .attr("stroke", nodeStroke)
         .attr("stroke-opacity", nodeStrokeOpacity)
@@ -103,6 +120,18 @@ export default function ForceGraph({
         .attr("fill", d => colourScale(d.colour))
         .call(drag(simulation));
   
+
+
+    const zoom = d3.zoom()
+    .scaleExtent([0.1, 10]) // This determines the min and max zoom scale
+    .on("zoom", (event) => {
+        g.attr("transform", event.transform);
+    });
+
+    svg.call(zoom);
+
+
+      
     if (W) link.attr("stroke-width", ({index: i}) => W[i]);
     if (L) link.attr("stroke", ({index: i}) => L[i]);
     // if (G) node.attr("fill", ({index: i}) => color(G[i])); // This assigns the node group colours
@@ -137,17 +166,33 @@ export default function ForceGraph({
         event.subject.fy = event.y;
       }
       
-      function dragended(event) {
+      function dragended(event, d) {
         if (!event.active) simulation.alphaTarget(0);
-        event.subject.fx = null;
-        event.subject.fy = null;
-      }
+        if (d.fixed) {
+            event.subject.fx = event.subject.x;
+            event.subject.fy = event.subject.y;
+        } else {
+            event.subject.fx = null;
+            event.subject.fy = null;
+        }
+    }
       
       return d3.drag()
         .on("start", dragstarted)
         .on("drag", dragged)
         .on("end", dragended);
     }
+
+    node.on("click", (event, d) => {
+      d.fixed = !d.fixed; // Toggle the fixed attribute
+      if (d.fixed) {
+          d.fx = d.x;
+          d.fy = d.y;
+      } else {
+          d.fx = null;
+          d.fy = null;
+      }
+  });
   
     return Object.assign(svg.node(), {scales: {color}});
   }

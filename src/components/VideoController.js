@@ -179,6 +179,7 @@ export default function VideoController({ dates }) {
             width={30}
             height={30}
             onClick={onRestart}
+            alt=""
           />
           <Image
             className="cursor-pointer"
@@ -186,6 +187,7 @@ export default function VideoController({ dates }) {
             width={30}
             height={30}
             onClick={onClickBack}
+            alt=""
           />
           <Image
             className="cursor-pointer"
@@ -193,6 +195,7 @@ export default function VideoController({ dates }) {
             width={30}
             height={30}
             onClick={onPause}
+            alt=""
           />
           <Image
             className="cursor-pointer"
@@ -200,6 +203,7 @@ export default function VideoController({ dates }) {
             width={30}
             height={30}
             onClick={onPlay}
+            alt=""
           />
           <Image
             className="cursor-pointer"
@@ -207,6 +211,7 @@ export default function VideoController({ dates }) {
             width={30}
             height={30}
             onClick={onClickNext}
+            alt=""
           />
 
           <Image
@@ -215,6 +220,7 @@ export default function VideoController({ dates }) {
             width={30}
             height={30}
             onClick={onEnd}
+            alt=""
           />
         </div>
         <div className="w-[100px] ml-9 flex flex-row">

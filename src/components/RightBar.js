@@ -106,7 +106,7 @@ export default function RightBar() {
 
       setFileColourLegendState(Object.entries(fileColourLegend));
     }
-  }, [storeItem, currentDate]);
+  }, [storeItem, currentDate, setFileColourLegendState]);
 
   return (
     <>

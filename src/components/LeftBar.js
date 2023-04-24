@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { analyseRepoDeltaDates, repoDates } from "../services/UploadService";
 import {
   Accordion,
@@ -18,33 +18,22 @@ import { useRecoilState } from "recoil";
 import {
   repoStoreItemFamily,
   CurrentRepoKeyState,
-  RepoKeysState,
   repoSelector,
   RepoAnalysedState,
   RepoStoreItemDatesState,
 } from "../atoms";
 import Image from "next/image";
-interface FromValues {
-  repoURL: string;
-  branch: string;
-  selectedDates: string[] | null;
-  config: File | null;
-}
 
 export default function LeftBar() {
-  const [repoName, setRepoName] = useState<string | null>("Repository");
-  const [dates, setDates] = useState<null | string[]>(null);
-  const [branches, setBranches] = useState<null | string[]>(null);
-  const [currentBranch, setCurrentBranch] = useState<null | string>(null);
+  const [repoName, setRepoName] = useState("Repository");
+  const [dates, setDates] = useState(null);
+  const [branches, setBranches] = useState(null);
+  const [currentBranch, setCurrentBranch] = useState(null);
   const [loading, setLoading] = useState(false);
   const [currentRepoDates, setCurrentRepoDates] = useState(null);
   const [currRepoURL, setCurrentRepoURL] = useState(null);
   const [branchChanged, setBranchChanged] = useState(false);
 
-  const [required, setRequired] = useState<boolean>(false);
-  let fromDateRef = useRef<string | null>(null);
-  let toDateRef = useRef<string | null>(null);
-  const [repoKeys, setRepoKeysState] = useRecoilState(RepoKeysState);
   const [currentRepoKey, setCurrentRepoKey] =
     useRecoilState(CurrentRepoKeyState);
   const [repoStore, setRepoStoreItemState] = useRecoilState(
@@ -58,7 +47,7 @@ export default function LeftBar() {
   const [repoAnalysed, setRepoAnalysedState] =
     useRecoilState(RepoAnalysedState);
 
-  const onRepoUpload = async (values: FromValues) => {
+  const onRepoUpload = async (values) => {
     setLoading(true);
 
     if (
@@ -117,7 +106,7 @@ export default function LeftBar() {
     setLoading(false);
   };
 
-  const changeRepoSelection = (repoName: string) => {
+  const changeRepoSelection = (repoName) => {
     const repo = repoStoreDates.filter((repo) => repo.name == repoName)[0];
     setRepoName(repoName);
     setDates(Object.keys(repo.dates));
@@ -131,7 +120,7 @@ export default function LeftBar() {
     form.setFieldValue("config", null);
   };
 
-  const changeBranchSelection = (branchName: string) => {
+  const changeBranchSelection = (branchName) => {
     // setDates(null);
     setBranchChanged(true);
     form.setFieldValue("branch", branchName);
@@ -144,8 +133,8 @@ export default function LeftBar() {
     initialValues: {
       repoURL: "",
       branch: "",
-      selectedDates: null as string[] | null,
-      config: null as File | null,
+      selectedDates: null,
+      config: null,
     },
     validate: {
       repoURL: (value) => (validUrl.isHttpsUri(value) ? null : "invalid url"),
@@ -156,29 +145,12 @@ export default function LeftBar() {
     },
   });
 
-  // const readFileAsync = (file: File) => {
-  //   return new Promise((resolve, reject) => {
-  //     const reader = new FileReader();
-  //     reader.onload = () => {
-  //       resolve(reader.result);
-  //     };
-  //     reader.onerror = reject;
-  //     reader.readAsText(file);
-  //   });
-  // };
-
   return (
     <div className="w-1/4 grid grid-rows-2 gap-3">
       <Paper shadow="md" radius="lg" p="xl">
         <LoadingOverlay visible={loading} overlayBlur={2} />
         <div className="grid grid-cols-1 ">
-          <form
-            // onSubmit={(event) => {
-            //   form.onSubmit((values) => onRepoUpload(values))
-            // }}
-
-            onSubmit={form.onSubmit((values) => onRepoUpload(values))}
-          >
+          <form onSubmit={form.onSubmit((values) => onRepoUpload(values))}>
             <div className="bg-Secondary  flex flex-row justify-between mb-3 w-full">
               <Accordion mx="auto" defaultValue="selectedRepo" maw={400}>
                 <Accordion.Item value="selectedRepo">
@@ -276,7 +248,7 @@ export default function LeftBar() {
                         };
                       }}
                       onChange={(value) => {
-                        changeBranchSelection(value!);
+                        changeBranchSelection(value);
                       }}
                     />
                   </div>

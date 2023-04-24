@@ -62,6 +62,8 @@ export async function analyseRepoDeltaDates(
 }
 
 export async function repoDates(repoURL: string, branch: string) {
+  console.log("url used", process.env.NEXT_PUBLIC_REPO_ANALYSIS_BACKEND_ROUTE);
+  
   if (process.env.NEXT_PUBLIC_REPO_ANALYSIS_BACKEND_ROUTE) {
     try {
       const analysisResponse = await fetch(

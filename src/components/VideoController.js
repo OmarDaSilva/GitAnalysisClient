@@ -120,8 +120,8 @@ export default function VideoController({ dates }) {
 
         {significantEvents
           ? significantEvents[currentDateRecoil]
-            ? significantEvents[currentDateRecoil].events.map((event) => {
-                return <p>{event.eventComment}</p>;
+            ? significantEvents[currentDateRecoil].events.map((event, index) => {
+                return <p key={index}>{event.eventComment}</p>;
               })
             : null
           : null}
@@ -154,7 +154,7 @@ export default function VideoController({ dates }) {
                   const position = getMarkerPosition(eventDate, dateKeys);
 
                   return (
-                    <Tooltip label={eventLabels}>
+                    <Tooltip label={eventLabels} key={eventDate}>
                       <div
                         key={eventDate}
                         onClick={() => {

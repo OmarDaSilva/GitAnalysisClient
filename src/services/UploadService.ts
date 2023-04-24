@@ -1,30 +1,87 @@
-import emitter from "../eventemitter";
-import { RepoStateDispatch, repoAnalysis } from "../pages";
+async function readConfigFile(file: File) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const json = JSON.parse(reader.result as string);
+        resolve(json);
+      } catch (error) {
+        reject(error);
+      }
+    };
+    reader.onerror = (error) => reject(error);
+    reader.readAsText(file);
+  });
+}
 
-export default async function UploadService(repo: File, dispatch: RepoStateDispatch) {
+export async function analyseRepoDeltaDates(
+  repoURL: string,
+  branch: string,
+  config: File | null,
+  selectedDates: string[]
+) {
+  if (process.env.NEXT_PUBLIC_REPO_ANALYSIS_DELTA_ROUTE) {
+    try {
+      let configData = null;
+      if (config) {
+        configData = await readConfigFile(config);
+      }
+
+      const payload = {
+        url: repoURL,
+        branch: branch,
+        config: configData,
+        selectedDates: selectedDates,
+      };
+
+      const analysisResponse = await fetch(
+        process.env.NEXT_PUBLIC_REPO_ANALYSIS_DELTA_ROUTE,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (analysisResponse) {
+        const repoInfo = await analysisResponse.json();
+
+        const { repoName, repoDates } = repoInfo;
+
+        return {
+          repoURL,
+          repoDates,
+        };
+      } else {
+        console.log("ERROR", analysisResponse);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
+}
+
+export async function repoDates(repoURL: string, branch: string) {
   if (process.env.NEXT_PUBLIC_REPO_ANALYSIS_BACKEND_ROUTE) {
-    const file = new FormData();
-    file.append("file", repo);
     try {
       const analysisResponse = await fetch(
         process.env.NEXT_PUBLIC_REPO_ANALYSIS_BACKEND_ROUTE,
         {
           method: "POST",
-          body: file,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            url: repoURL,
+            branch: branch,
+          }),
         }
       );
 
       if (analysisResponse) {
-        
-        const data = await analysisResponse.json()
-        let repoDates = Object.keys(data);
-        let repo = data[repoDates[0]];
-        emitter.emit('RepoAnalaysed', repo);
-        emitter.emit('RepoAnalysedDates', Object.keys(data))    
-        Object.keys(data).forEach((date => {
-          dispatch({ type: 'Add', payload: { key: date, value: data[date]}})
-        }))  
+        const repoInfo = await analysisResponse.json();
+        return repoInfo;
       }
-    } catch {}
+    } catch (error) {
+      console.log(error);
+    }
   }
 }

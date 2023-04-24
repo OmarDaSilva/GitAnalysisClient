@@ -3,34 +3,41 @@ import { Inter } from "@next/font/google";
 import LeftBar from "../components/LeftBar";
 import VisualRepo from "../components/VisualRepo";
 import RightBar from "../components/RightBar";
-import { createContext, useState, useReducer} from "react";
+import { createContext, useState, useReducer } from "react";
+import { RecoilRoot, atom, selector, useRecoilState, useRecoilValue } from "recoil";
 
-type dictionary = {
+export type storedRepos = {
   [key: string]: {
-    links: {},
-    nodes: {}
-  }
-}
+    [key: string]: {
+      links: {};
+      nodes: {};
+    };
+  };
+};
+
 type Repos = {
-  repos: dictionary
+  repos: storedRepos;
 };
 
 export type repoAnalysis = {
-  nodes: {}
-  links: {}
-}
+  [key: string]: {
+    links: {};
+    nodes: {};
+  };
+};
 
 type RepoStateAction = {
-  type: 'Add' | 'Remove';
-  payload: { key: string; value: repoAnalysis};
+  type: "Add" | "Remove";
+  payload: { key: string; value: repoAnalysis };
 };
+
 
 export type RepoStateDispatch = React.Dispatch<RepoStateAction>;
 
 const initialState: Repos = { repos: {} };
 
 function reducer(state: Repos, action: RepoStateAction): Repos {
-  if (action.type == 'Add') {
+  if (action.type == "Add") {
     return {
       repos: {
         ...state.repos,
@@ -42,25 +49,66 @@ function reducer(state: Repos, action: RepoStateAction): Repos {
   }
 }
 
-export const ReposContext = createContext<{state: Repos, dispatch: RepoStateDispatch}>({
+// export type currentRepo = {
+//   repoName: string
+// }
+
+type Repo = {
+  repo: string
+}
+
+type CurrentRepoStateAction = {
+  type: "Set";
+  payload: string
+};
+
+export type CurrentRepoDispatch = React.Dispatch<CurrentRepoStateAction>;
+
+const intialCurrentRepoState: Repo = { repo: ''}
+
+function currentRepoReducer(state: Repo, action: CurrentRepoStateAction): Repo {
+  return {
+    repo: action.payload
+  }
+}
+
+export const CurrentRepoContext = createContext<{
+  currentRepoState: Repo;
+  currentRepoDispatch: CurrentRepoDispatch
+}>({
+  currentRepoState: intialCurrentRepoState,
+  currentRepoDispatch: () => null
+})
+
+
+export const ReposContext = createContext<{
+  state: Repos;
+  dispatch: RepoStateDispatch;
+}>({
   state: initialState,
-  dispatch: () => null
+  dispatch: () => null,
 });
 
 export default function Home() {
   const [state, dispatch] = useReducer(reducer, initialState);
-
+  const [currentRepoState, currentRepoDispatch] = useReducer(currentRepoReducer, intialCurrentRepoState)
+  
   return (
     <>
-      <ReposContext.Provider value={{state, dispatch}}>
-        <Head>
-          <title>Git Visuals</title>
-        </Head>
-        <main className="flex flex-row justify-between">
-          <LeftBar />
-          <VisualRepo />
-        </main>
-      </ReposContext.Provider>
+    <RecoilRoot>
+      <CurrentRepoContext.Provider value={{currentRepoState, currentRepoDispatch}}>
+        <ReposContext.Provider value={{ state, dispatch }}>
+          <Head>
+            <title>Git Visuals</title>
+          </Head>
+          <main className="flex flex-row justify-between">
+            <LeftBar />
+            <VisualRepo />
+            <RightBar />
+          </main>
+        </ReposContext.Provider>
+      </CurrentRepoContext.Provider>
+    </RecoilRoot>
     </>
   );
 }

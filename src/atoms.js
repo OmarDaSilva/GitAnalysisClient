@@ -94,7 +94,7 @@ export const progressSelector = selector({
     const nextDateKey = get(VideoControllerNextDateKeyState);
     const dateKeys = get(repoDatesState);
     if (nextDateKey < 0 || nextDateKey >= dateKeys?.length) {
-      throw new Error("Invalid date key");
+      return 0
     }
 
     if (dateKeys == null) {

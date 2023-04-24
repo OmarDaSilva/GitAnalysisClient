@@ -1,4 +1,6 @@
 import * as d3 from "d3"
+import emitter from "../eventemitter";
+
 // Copyright 2021 Observable, Inc.
 // Released under the ISC license.
 // https://observablehq.com/@d3/force-directed-graph
@@ -20,7 +22,7 @@ export default function ForceGraph({
     nodeStrength,
     linkSource = ({source}) => source, // given d in links, returns a node identifier string
     linkTarget = ({target}) => target, // given d in links, returns a node identifier string
-    linkStroke = "#999", // link stroke color
+    linkStroke = "#e4e4e4", // link stroke color
     linkStrokeOpacity = 0.6, // link stroke opacity
     linkStrokeWidth = 1.5, // given d in links, returns a stroke width in pixels
     linkStrokeLinecap = "round", // link stroke linecap
@@ -80,13 +82,13 @@ export default function ForceGraph({
     const forceNode = d3.forceManyBody().strength(-150);
     const forceLink = d3.forceLink(links).id(({index: i}) => N[i]).distance(100);
     if (nodeStrength !== undefined) forceNode.strength(nodeStrength);
-    if (linkStrength !== undefined) forceLink.strength(linkStrength);
+    if (linkStrength !== undefined) forceLink.strength(linkStrength); 
     
     const svg = d3.create("svg")
     .attr("width", width)
     .attr("height", height)
     .attr("viewBox", [-width / 2, -height / 2, width, height])
-    .attr("style", "max-width: 100%; height: 100%; height: intrinsic;");
+    .attr("style", "max-width: 100%; height: 100%; height: intrinsic;  background-color: #222222;")
 
     svg.property("currentScale", 1);
 
@@ -147,19 +149,21 @@ export default function ForceGraph({
     window.addEventListener("scrollToNode", (event) => {
       targetNodeName = event.detail.nodeName;
       targetNodeElement = node.filter(d => d.name === targetNodeName);
-      originalRadius = targetNodeElement.attr("r");
-      originalColor = targetNodeElement.attr("fill");
+
+      if (targetNodeElement._groups.at(0).length == 0) {
+
+        emitter.emit("ElementNotFound", null)
+
+      } else {
+        originalRadius = targetNodeElement.attr("r");
+        originalColor = targetNodeElement.attr("fill");
+        highlightNode(targetNodeElement);
+      
+        setTimeout(() => {
+          resetNodeAppearance(targetNodeElement, originalRadius, originalColor);
+        }, 4000)
+      }
     
-      highlightNode(targetNodeElement);
-    
-      const targetZoomLevel = 2;
-    
-      svg.transition()
-        .duration(1000)
-        .call(zoom.scaleTo, targetZoomLevel)
-        .on("end", () => {
-          scrollToTargetNode();
-        });
     });
     
 
@@ -199,7 +203,7 @@ export default function ForceGraph({
 
     function highlightNode(node) {
       node
-        .attr("r", d => d.name === "root" ? 30 : d.colour === "DarkBlue" ? 25 : nodeRadius * 1.5)
+        .attr("r", d => d.name === "root" ? 100 : d.colour === "DarkBlue" ? 100 : 100)
         .attr("stroke-width", nodeStrokeWidth * 2);
     }
     

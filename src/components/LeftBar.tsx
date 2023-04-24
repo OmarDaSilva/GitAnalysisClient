@@ -37,8 +37,9 @@ export default function LeftBar() {
   const [branches, setBranches] = useState<null | string[]>(null);
   const [currentBranch, setCurrentBranch] = useState<null | string>(null);
   const [loading, setLoading] = useState(false);
-  const [currentRepoDates, setCurrentRepoDates] = useState(null)
-  const [currRepoURL, setCurrentRepoURL] = useState(null)
+  const [currentRepoDates, setCurrentRepoDates] = useState(null);
+  const [currRepoURL, setCurrentRepoURL] = useState(null);
+  const [branchChanged, setBranchChanged] = useState(false);
 
   const [required, setRequired] = useState<boolean>(false);
   let fromDateRef = useRef<string | null>(null);
@@ -60,7 +61,11 @@ export default function LeftBar() {
   const onRepoUpload = async (values: FromValues) => {
     setLoading(true);
 
-    if (values.branch != "" && values.selectedDates) {
+    if (
+      values.branch != "" &&
+      values.selectedDates &&
+      values.selectedDates.length > 0
+    ) {
       let config = values.config;
 
       let response = await analyseRepoDeltaDates(
@@ -77,47 +82,63 @@ export default function LeftBar() {
         setRepoSelector({ repoKey, repoDates, repoName, events });
       }
     } else {
+      setBranchChanged(false);
       let { repoName, dates, branches, main } = await repoDates(
         values.repoURL,
         values.branch
       );
       setRepoStoreItemDates((val) => [
         ...val,
-        { name: repoName, dates: dates, branches: branches, main: main, url: values.repoURL },
+        {
+          name: repoName,
+          dates: dates,
+          branches: branches,
+          main: main,
+          url: values.repoURL,
+        },
       ]);
-      debugger
+      debugger;
       if (currentRepoDates) {
-        setCurrentRepoDates(val => [ ...val , repoName])
+        setCurrentRepoDates((val) => [...val, repoName]);
       } else {
-        setCurrentRepoDates([repoName])
+        setCurrentRepoDates([repoName]);
       }
       setRepoName(repoName);
       setDates(Object.keys(dates));
       setBranches(branches);
-      form.setFieldValue("branch", main);
+
+      if (form.values.branch == "") {
+        form.setFieldValue("branch", main);
+      }
       setCurrentBranch(main);
       setRepoAnalysedState(true);
-      setCurrentRepoURL(values.repoURL)
+      setCurrentRepoURL(values.repoURL);
     }
     setLoading(false);
   };
 
   const changeRepoSelection = (repoName: string) => {
-    const repo = repoStoreDates.filter(repo => repo.name == repoName)[0]
-    setRepoName(repoName)
+    const repo = repoStoreDates.filter((repo) => repo.name == repoName)[0];
+    setRepoName(repoName);
     setDates(Object.keys(repo.dates));
     setBranches(repo.branches);
-    setCurrentBranch(repo.main)
+    setCurrentBranch(repo.main);
     setRepoAnalysedState(true);
-    setCurrentRepoURL(repo.url)
-
+    setCurrentRepoURL(repo.url);
 
     form.setFieldValue("repoURL", repo.url);
-    form.setFieldValue("branch", repo.main)
-    form.setFieldValue("config", null)
+    form.setFieldValue("branch", repo.main);
+    form.setFieldValue("config", null);
+  };
 
-
-  }
+  const changeBranchSelection = (branchName: string) => {
+    // setDates(null);
+    setBranchChanged(true);
+    form.setFieldValue("branch", branchName);
+    form.setFieldValue("selectedDates", null);
+    form.setFieldValue("config", null);
+    form.validate();
+  };
 
   const form = useForm({
     initialValues: {
@@ -129,42 +150,45 @@ export default function LeftBar() {
     validate: {
       repoURL: (value) => (validUrl.isHttpsUri(value) ? null : "invalid url"),
       selectedDates: (value) =>
-        (value === null || value.length === 0) && repoAnalysed
+        (value === null || value.length === 0) && repoAnalysed && !branchChanged
           ? "Please select at least one date"
           : null,
     },
   });
 
-  const readFileAsync = (file: File) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        resolve(reader.result);
-      };
-      reader.onerror = reject;
-      reader.readAsText(file);
-    });
-  };
+  // const readFileAsync = (file: File) => {
+  //   return new Promise((resolve, reject) => {
+  //     const reader = new FileReader();
+  //     reader.onload = () => {
+  //       resolve(reader.result);
+  //     };
+  //     reader.onerror = reject;
+  //     reader.readAsText(file);
+  //   });
+  // };
 
   return (
     <div className="w-1/4 grid grid-rows-2 gap-3">
       <Paper shadow="md" radius="lg" p="xl">
         <LoadingOverlay visible={loading} overlayBlur={2} />
         <div className="grid grid-cols-1 ">
-          <form onSubmit={form.onSubmit((values) => onRepoUpload(values))}>
+          <form
+            // onSubmit={(event) => {
+            //   form.onSubmit((values) => onRepoUpload(values))
+            // }}
+
+            onSubmit={form.onSubmit((values) => onRepoUpload(values))}
+          >
             <div className="bg-Secondary  flex flex-row justify-between mb-3 w-full">
               <Accordion mx="auto" defaultValue="selectedRepo" maw={400}>
                 <Accordion.Item value="selectedRepo">
                   <Accordion.Control>
-                    <p className="text-[22px]">
-                      {repoName}
-
-                    </p>
+                    <p className="text-[22px]">{repoName}</p>
                   </Accordion.Control>
                   <Accordion.Panel>
                     <Select
                       disabled={!dates}
-                      data={ currentRepoDates ?? [] }
+                      data={currentRepoDates ?? []}
                       placeholder="Change Repository"
                       variant="filled"
                       radius="sm"
@@ -172,7 +196,7 @@ export default function LeftBar() {
                       style={{ width: "100%" }}
                       value={repoName}
                       onChange={(val) => {
-                        changeRepoSelection(val)
+                        changeRepoSelection(val);
                       }}
                       styles={() => {
                         return {
@@ -221,7 +245,7 @@ export default function LeftBar() {
                   }
                   onClick={() => {
                     setRepoAnalysedState(false);
-                    setRepoName('Repository')
+                    setRepoName("Repository");
                     form.setFieldValue("branch", "");
                   }}
                 >
@@ -252,64 +276,64 @@ export default function LeftBar() {
                         };
                       }}
                       onChange={(value) => {
-                        setDates(null);
-                        setRequired(false);
-                        form.setFieldValue("fromDate", "");
-                        form.setFieldValue("toDate", "");
-                        form.setFieldValue("branch", value!);
+                        changeBranchSelection(value!);
                       }}
                     />
                   </div>
                 </div>
 
-                <div className="mb-5">
-                  <div className="bg-Secondary p-3 grid grid-row-2 gap-3 justify-between">
-                    <MultiSelect
-                      data={dates ?? []}
-                      label="Select dates"
-                      placeholder="Scroll to see all options"
-                      dropdownComponent="div"
-                      maxDropdownHeight={200}
-                      maxSelectedValues={10}
-                      searchable
-                      limit={20}
-                      error={form.errors.selectedDates}
-                      onChange={(value) =>
-                        form.setFieldValue("selectedDates", value)
-                      }
-                      style={{'width' : '90%'}}
-                    />
-                  </div>
-                </div>
-
-                <Divider />
-
-                <div className="my-2">
-                  <Accordion defaultValue="Configuration">
-                    <Accordion.Item value="Configuration">
-                      <Accordion.Control>Configuration</Accordion.Control>
-                      <Accordion.Panel>
-                        <input
-                          type="file"
-                          onChange={(event) => {
-                            const file =
-                              event.currentTarget.files &&
-                              event.currentTarget.files[0];
-                            form.setFieldValue("config", file || null);
-                          }}
-                          name="uploadFile"
-                          accept=".json"
+                {!branchChanged ? (
+                  <>
+                    <div className="mb-5">
+                      <div className="bg-Secondary p-3 grid grid-row-2 gap-3 justify-between">
+                        <MultiSelect
+                          data={dates ?? []}
+                          label="Select dates"
+                          placeholder="Scroll to see all options"
+                          dropdownComponent="div"
+                          maxDropdownHeight={200}
+                          maxSelectedValues={10}
+                          searchable
+                          limit={20}
+                          error={form.errors.selectedDates}
+                          onChange={(value) =>
+                            form.setFieldValue("selectedDates", value)
+                          }
+                          style={{ width: "90%" }}
                         />
-                      </Accordion.Panel>
-                    </Accordion.Item>
-                  </Accordion>
-                </div>
+                      </div>
+                    </div>
+
+                    <Divider />
+
+                    <div className="my-2">
+                      <Accordion defaultValue="Configuration">
+                        <Accordion.Item value="Configuration">
+                          <Accordion.Control>Configuration</Accordion.Control>
+                          <Accordion.Panel>
+                            <input
+                              type="file"
+                              onChange={(event) => {
+                                const file =
+                                  event.currentTarget.files &&
+                                  event.currentTarget.files[0];
+                                form.setFieldValue("config", file || null);
+                              }}
+                              name="uploadFile"
+                              accept=".json"
+                            />
+                          </Accordion.Panel>
+                        </Accordion.Item>
+                      </Accordion>
+                    </div>
+                  </>
+                ) : null}
               </>
             ) : null}
 
             <Group className="flex justify-center">
               <Button variant="white" type="submit">
-                {repoAnalysed ? 'Analyse' : 'Fetch dates' }
+                {repoAnalysed && !branchChanged ? "Analyse" : "Fetch dates"}
               </Button>
             </Group>
           </form>

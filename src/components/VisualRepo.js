@@ -64,8 +64,20 @@ export default function VisualRepo() {
     <div className="w-3/4 p-4 pt-0 flex flex-col relative">
       <LoadingOverlay visible={showLoader} overlayBlur={2} />
       <div id="graph" className="bg-white border-[#e6e6e6] border-2	">
-        {!data ? (
-          <div className="text-black">Upload a repository to get started</div>
+        {!currentRepoKey ? (
+          <div className="text-black w-[100%] h-[400px] text-center bg-[#222222] text-white flex flex-col">
+
+            <p>
+              Visit https://github.com/OmarDaSilva/GitAnalysisClient
+            </p>
+
+            <br />
+
+            <p>
+              Fetch dates from a repository URL to get started
+            </p>
+
+          </div>
         ) : null}
       </div>
       <VideoController />

@@ -13,7 +13,7 @@ import {
 } from "../atoms";
 
 import getMarkerPosition from "/src/utils/VideoControllerUtils";
-import { NumberInput, Tooltip } from "@mantine/core";
+import { NumberInput, Select, Tooltip } from "@mantine/core";
 
 export default function VideoController({ dates }) {
   const [currentDateRecoil, setCurrentDateRecoil] =
@@ -63,6 +63,21 @@ export default function VideoController({ dates }) {
 
   const onEnd = async () => {
     setCurrentDate(dateKeys.at(-1));
+    setVideoControllerNextDateKey(dateKeys.length - 1);
+  };
+
+  const changeDate = (val) => {
+    let ind = dateKeys.indexOf(val);
+
+    setCurrentDate(val);
+    setVideoControllerNextDateKey(ind);
+  };
+
+  const changeToMarkerDate = (date) => {
+    let ind = dateKeys.indexOf(date);
+
+    setCurrentDate(date);
+    setVideoControllerNextDateKey(ind);
   };
 
   useEffect(() => {
@@ -94,17 +109,33 @@ export default function VideoController({ dates }) {
 
   return (
     <div className="grid grid-cols-1 gap-5 mt-5">
-      <div className="flex justify-center">
-        {"Current Date: " + currentDateRecoil}
-      </div>
+      <div className="flex justify-between">
+        <div className="text-center flex">
+          <p>
+            {currentDateRecoil
+              ? "Date: " + currentDateRecoil.slice(0, 10)
+              : null}
+          </p>
+        </div>
 
-      {significantEvents
-        ? significantEvents[currentDateRecoil]
-          ? significantEvents[currentDateRecoil].events.map((event) => {
-              return <p>{event.eventComment}</p>;
-            })
-          : null
-        : null}
+        {significantEvents
+          ? significantEvents[currentDateRecoil]
+            ? significantEvents[currentDateRecoil].events.map((event) => {
+                return <p>{event.eventComment}</p>;
+              })
+            : null
+          : null}
+
+        <div className="mr-5">
+          <Select
+            label="Select date"
+            data={dateKeys ?? []}
+            onChange={(val) => {
+              changeDate(val);
+            }}
+          />
+        </div>
+      </div>
 
       {true ? (
         <div className="flex flex-col" id="progress-bar">
@@ -126,7 +157,10 @@ export default function VideoController({ dates }) {
                     <Tooltip label={eventLabels}>
                       <div
                         key={eventDate}
-                        className="absolute h-6 w-1 bg-red-500"
+                        onClick={() => {
+                          changeToMarkerDate(eventDate)
+                        }}
+                        className="absolute h-6 w-1 bg-red-500 cursor-pointer"
                         style={{ left: `calc(${position}% )` }}
                       ></div>
                     </Tooltip>
@@ -140,30 +174,35 @@ export default function VideoController({ dates }) {
       <div className="w-[100%] flex justify-center">
         <div className="flex justify-between w-[50%]">
           <Image
+            className="cursor-pointer"
             src="/assets/backward.svg"
             width={30}
             height={30}
             onClick={onRestart}
           />
           <Image
+            className="cursor-pointer"
             src="/assets/rewind.svg"
             width={30}
             height={30}
             onClick={onClickBack}
           />
           <Image
+            className="cursor-pointer"
             src="/assets/pause.svg"
             width={30}
             height={30}
             onClick={onPause}
           />
           <Image
+            className="cursor-pointer"
             src="/assets/play.svg"
             width={30}
             height={30}
             onClick={onPlay}
           />
           <Image
+            className="cursor-pointer"
             src="/assets/flash forward.svg"
             width={30}
             height={30}
@@ -171,26 +210,27 @@ export default function VideoController({ dates }) {
           />
 
           <Image
+            className="cursor-pointer"
             src="/assets/forward.svg"
             width={30}
             height={30}
             onClick={onEnd}
           />
         </div>
-        <div className="w-[100px] ml-9">
-            <NumberInput 
-              label="Video Speed in MS" 
-              defaultValue={4000}
-              min={1000}
-              step={100}
-              onChange={
-                val => {
-                  setVideoSpeedState(val)
-                }
-              }
-              />
+        <div className="w-[100px] ml-9 flex flex-row">
+          <NumberInput
+            defaultValue={4000}
+            min={1000}
+            step={100}
+            onChange={(val) => {
+              setVideoSpeedState(val);
+            }}
+          />
         </div>
 
+        <p className="align-bottom	self-center text-[14px] ml-3">
+          Play speed (Ms)
+        </p>
       </div>
     </div>
   );

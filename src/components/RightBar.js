@@ -124,9 +124,9 @@ export default function RightBar() {
                     </Accordion.Control>
                     <div className="bg-Secondary p-3 flex flex-col justify-between ">
                       {commitShas
-                        ? commitShas.map((value) => {
+                        ? commitShas.map((value, index) => {
                             return (
-                              <Accordion.Panel>
+                              <Accordion.Panel key={index}>
                                 <>
                                   <div className="bg-Primary m-2">
                                     <p>{value.commitSha.substring(0, 8)}</p>
@@ -160,6 +160,7 @@ export default function RightBar() {
                       {fileColourLegend.map(([key, value]) => {
                         return (
                           <div
+                          key={key}
                             className="text-right m-3"
                             style={{
                               background: `linear-gradient(to right, ${dict[key]}, transparent)`,
@@ -256,8 +257,8 @@ export default function RightBar() {
 
                   {contributors?.length ? (
                     <Accordion.Panel>
-                      {contributors.map((value) => {
-                        return <div className="bg-Primary">{value}</div>;
+                      {contributors.map((value, index) => {
+                        return <div key={index} className="bg-Primary">{value}</div>;
                       })}
                     </Accordion.Panel>
                   ) : (

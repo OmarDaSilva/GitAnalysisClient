@@ -1,9 +1,3 @@
-import emitter from "../eventemitter";
-import { CurrentRepoDispatch, RepoStateDispatch, repoAnalysis } from "../pages";
-import useRepoLocalStorage from "../hooks/useRepoDates";
-import LocalRepoData from "../types/LocalRepoData.type";
-import delta from "../types/deltaDates.type";
-
 async function readConfigFile(file: File) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -18,11 +12,6 @@ async function readConfigFile(file: File) {
     reader.onerror = (error) => reject(error);
     reader.readAsText(file);
   });
-}
-
-interface config {
-  excludeDirectory: string[];
-  includeContributors: string[];
 }
 
 export async function analyseRepoDeltaDates(
@@ -42,7 +31,7 @@ export async function analyseRepoDeltaDates(
         url: repoURL,
         branch: branch,
         config: configData,
-        selectedDates: selectedDates
+        selectedDates: selectedDates,
       };
 
       const analysisResponse = await fetch(
@@ -59,11 +48,9 @@ export async function analyseRepoDeltaDates(
 
         const { repoName, repoDates } = repoInfo;
 
-        // sessionStorage.setItem(repoName, JSON.stringify(repoDates))
-
         return {
           repoURL,
-          repoDates
+          repoDates,
         };
       } else {
         console.log("ERROR", analysisResponse);
@@ -91,35 +78,10 @@ export async function repoDates(repoURL: string, branch: string) {
 
       if (analysisResponse) {
         const repoInfo = await analysisResponse.json();
-        // let regex = new RegExp("*/");
-        // sessionStorage.setItem(repoName.replace(".zip", ""), JSON.stringify(dates))
         return repoInfo;
-        // const [repositoryName, setRepoDates] = useRepoLocalStorage<LocalRepoData>(repoName, dates)
       }
     } catch (error) {
       console.log(error);
     }
   }
 }
-
-// export async function repoDates(repoURL: string) {
-//   if (process.env.NEXT_PUBLIC_REPO_ANALYSIS_BACKEND_ROUTE) {
-//     const file = new FormData();
-//     file.append("file", repo);
-//     try {
-//       const analysisResponse = await fetch(
-//         process.env.NEXT_PUBLIC_REPO_ANALYSIS_BACKEND_ROUTE,
-//         {
-//           method: "POST",
-//           body: file,
-//         }
-//       );
-
-//       if (analysisResponse) {
-//         const dates = await analysisResponse.json();
-//         sessionStorage.setItem(repoName.replace(".zip", ""), JSON.stringify(dates))
-//         // const [repositoryName, setRepoDates] = useRepoLocalStorage<LocalRepoData>(repoName, dates)
-//       }
-//     } catch {}
-//   }
-// }

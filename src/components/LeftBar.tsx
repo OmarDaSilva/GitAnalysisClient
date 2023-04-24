@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { analyseRepoDeltaDates, repoDates } from "../services/UploadService";
 import {
+  Accordion,
   Button,
   Divider,
   Group,
@@ -19,7 +20,10 @@ import {
   CurrentRepoKeyState,
   RepoKeysState,
   repoSelector,
+  RepoAnalysedState,
+  RepoStoreItemDatesState,
 } from "../atoms";
+import Image from "next/image";
 interface FromValues {
   repoURL: string;
   branch: string;
@@ -33,6 +37,9 @@ export default function LeftBar() {
   const [branches, setBranches] = useState<null | string[]>(null);
   const [currentBranch, setCurrentBranch] = useState<null | string>(null);
   const [loading, setLoading] = useState(false);
+  const [currentRepoDates, setCurrentRepoDates] = useState(null)
+  const [currRepoURL, setCurrentRepoURL] = useState(null)
+
   const [required, setRequired] = useState<boolean>(false);
   let fromDateRef = useRef<string | null>(null);
   let toDateRef = useRef<string | null>(null);
@@ -42,10 +49,17 @@ export default function LeftBar() {
   const [repoStore, setRepoStoreItemState] = useRecoilState(
     repoStoreItemFamily(currentRepoKey)
   );
+
+  const [repoStoreDates, setRepoStoreItemDates] = useRecoilState(
+    RepoStoreItemDatesState
+  );
   const [repoSelectorValue, setRepoSelector] = useRecoilState(repoSelector);
+  const [repoAnalysed, setRepoAnalysedState] =
+    useRecoilState(RepoAnalysedState);
 
   const onRepoUpload = async (values: FromValues) => {
     setLoading(true);
+
     if (values.branch != "" && values.selectedDates) {
       let config = values.config;
 
@@ -67,15 +81,43 @@ export default function LeftBar() {
         values.repoURL,
         values.branch
       );
+      setRepoStoreItemDates((val) => [
+        ...val,
+        { name: repoName, dates: dates, branches: branches, main: main, url: values.repoURL },
+      ]);
+      debugger
+      if (currentRepoDates) {
+        setCurrentRepoDates(val => [ ...val , repoName])
+      } else {
+        setCurrentRepoDates([repoName])
+      }
       setRepoName(repoName);
       setDates(Object.keys(dates));
       setBranches(branches);
       form.setFieldValue("branch", main);
       setCurrentBranch(main);
-      setRequired(true);
+      setRepoAnalysedState(true);
+      setCurrentRepoURL(values.repoURL)
     }
     setLoading(false);
   };
+
+  const changeRepoSelection = (repoName: string) => {
+    const repo = repoStoreDates.filter(repo => repo.name == repoName)[0]
+    setRepoName(repoName)
+    setDates(Object.keys(repo.dates));
+    setBranches(repo.branches);
+    setCurrentBranch(repo.main)
+    setRepoAnalysedState(true);
+    setCurrentRepoURL(repo.url)
+
+
+    form.setFieldValue("repoURL", repo.url);
+    form.setFieldValue("branch", repo.main)
+    form.setFieldValue("config", null)
+
+
+  }
 
   const form = useForm({
     initialValues: {
@@ -86,6 +128,10 @@ export default function LeftBar() {
     },
     validate: {
       repoURL: (value) => (validUrl.isHttpsUri(value) ? null : "invalid url"),
+      selectedDates: (value) =>
+        (value === null || value.length === 0) && repoAnalysed
+          ? "Please select at least one date"
+          : null,
     },
   });
 
@@ -106,122 +152,164 @@ export default function LeftBar() {
         <LoadingOverlay visible={loading} overlayBlur={2} />
         <div className="grid grid-cols-1 ">
           <form onSubmit={form.onSubmit((values) => onRepoUpload(values))}>
-            <div className="bg-Secondary p-3 flex flex-row justify-between ">
-              <p className="text-[32px] text-[#495057]" />
-              <Select
-                disabled={!dates}
-                data={[]}
-                placeholder="Change Repository"
-                label={repoName}
-                variant="filled"
-                radius="md"
-                size="md"
-                style={{ width: "100%" }}
-                styles={() => {
-                  return {
-                    label: {
-                      fontSize: "30px",
-                      fontWeight: 400,
-                      marginBottom: "15px",
-                    },
-                    root: {
-                      textAlign: "center",
-                      textOverflow: "ellipsis",
-                    },
-                  };
-                }}
-              />
+            <div className="bg-Secondary  flex flex-row justify-between mb-3 w-full">
+              <Accordion mx="auto" defaultValue="selectedRepo" maw={400}>
+                <Accordion.Item value="selectedRepo">
+                  <Accordion.Control>
+                    <p className="text-[22px]">
+                      {repoName}
+
+                    </p>
+                  </Accordion.Control>
+                  <Accordion.Panel>
+                    <Select
+                      disabled={!dates}
+                      data={ currentRepoDates ?? [] }
+                      placeholder="Change Repository"
+                      variant="filled"
+                      radius="sm"
+                      size="sm"
+                      style={{ width: "100%" }}
+                      value={repoName}
+                      onChange={(val) => {
+                        changeRepoSelection(val)
+                      }}
+                      styles={() => {
+                        return {
+                          label: {
+                            fontSize: "30px",
+                            fontWeight: 400,
+                            marginBottom: "15px",
+                          },
+                          root: {
+                            textAlign: "center",
+                            textOverflow: "ellipsis",
+                          },
+                        };
+                      }}
+                    />
+                  </Accordion.Panel>
+                </Accordion.Item>
+              </Accordion>
             </div>
 
-            <Divider />
-            <div className="p-3 flex flex-row justify-between bg-Secondary">
-              <Tooltip label="Insert a public github repository URL">
-                <TextInput
-                  label="Repository URL"
-                  placeholder="URL"
-                  // error="Invalid URL"
-                  required
-                  onChange={(value) => {
-                    setDates(null);
-                    form.setFieldValue("repoURL", value.currentTarget.value);
-                  }}
-                  // {...form.getInputProps('repoURL')}
-                />
-              </Tooltip>
-            </div>
-            <div>
-              <div className="bg-Secondary p-3 grid grid-row-2 gap-3 justify-between">
-                <Select
-                  disabled={!branches}
-                  data={branches ?? []}
-                  placeholder={currentBranch ?? "branch"}
-                  // label="From"
-                  variant="filled"
-                  radius="md"
-                  size="md"
-                  required={required}
-                  // onInput={() => alert("Input changed")}
-                  // onChange={(value) => changeBranch(value!)}
-                  style={{ width: "100%" }}
-                  onChange={(value) => {
-                    setDates(null);
-                    setRequired(false);
-                    form.setFieldValue("fromDate", "");
-                    form.setFieldValue("toDate", "");
-                    form.setFieldValue("branch", value!);
-                  }}
-                  // {...form.getInputProps("branch")}
-                />
+            {!repoAnalysed ? (
+              <div className="p-3 flex flex-row justify-between bg-Secondary mb-3">
+                <Tooltip label="Insert a public github repository URL">
+                  <TextInput
+                    label="Repository URL"
+                    placeholder="URL"
+                    required
+                    onChange={(value) => {
+                      setDates(null);
+                      form.setFieldValue("repoURL", value.currentTarget.value);
+                    }}
+                  />
+                </Tooltip>
               </div>
-            </div>
-
-            <Divider />
-            <div>
-              <div className="bg-Secondary p-3 grid grid-row-2 gap-3 justify-between">
-                <MultiSelect
-                  data={dates ?? []}
-                  label="Select dates"
-                  placeholder="Scroll to see all options"
-                  dropdownComponent="div"
-                  maxDropdownHeight={200}
-                  maxSelectedValues={10}
-                  searchable
-                  limit={20}
-                  onChange={(value) =>
-                    form.setFieldValue("selectedDates", value)
+            ) : (
+              <div className="my-3">
+                <Button
+                  variant="white"
+                  leftIcon={
+                    <Image
+                      src={"/assets/database-plus.svg"}
+                      width={20}
+                      height={20}
+                      alt=""
+                    />
                   }
-                />
-              </div>
-            </div>
-            <Divider />
-
-            <Divider />
-
-            <div className="my-5">
-              <div className="mt-5 mb-5">Configuration</div>
-              <input
-                type="file"
-                onChange={(event) => {
-                  const file =
-                    event.currentTarget.files && event.currentTarget.files[0];
-                  form.setFieldValue("config", file || null);
-                }}
-                name="uploadFile"
-                accept=".json"
-              />
-
-              <div className="flex justify-center">
-                <Button variant="white" type="submit">
-                  Add Config
+                  onClick={() => {
+                    setRepoAnalysedState(false);
+                    setRepoName('Repository')
+                    form.setFieldValue("branch", "");
+                  }}
+                >
+                  Analyse new repository
                 </Button>
               </div>
-            </div>
-
+            )}
             <Divider />
+
+            {repoAnalysed ? (
+              <>
+                <div>
+                  <div className="bg-Secondary p-3 grid grid-row-2 gap-3 justify-between">
+                    <Select
+                      disabled={!branches}
+                      data={branches ?? []}
+                      placeholder={currentBranch ?? "branch"}
+                      label="Select branch"
+                      variant="filled"
+                      radius="sm"
+                      size="sm"
+                      style={{ width: "100%" }}
+                      styles={() => {
+                        return {
+                          label: {
+                            fontSize: "14px",
+                          },
+                        };
+                      }}
+                      onChange={(value) => {
+                        setDates(null);
+                        setRequired(false);
+                        form.setFieldValue("fromDate", "");
+                        form.setFieldValue("toDate", "");
+                        form.setFieldValue("branch", value!);
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-5">
+                  <div className="bg-Secondary p-3 grid grid-row-2 gap-3 justify-between">
+                    <MultiSelect
+                      data={dates ?? []}
+                      label="Select dates"
+                      placeholder="Scroll to see all options"
+                      dropdownComponent="div"
+                      maxDropdownHeight={200}
+                      maxSelectedValues={10}
+                      searchable
+                      limit={20}
+                      error={form.errors.selectedDates}
+                      onChange={(value) =>
+                        form.setFieldValue("selectedDates", value)
+                      }
+                      style={{'width' : '90%'}}
+                    />
+                  </div>
+                </div>
+
+                <Divider />
+
+                <div className="my-2">
+                  <Accordion defaultValue="Configuration">
+                    <Accordion.Item value="Configuration">
+                      <Accordion.Control>Configuration</Accordion.Control>
+                      <Accordion.Panel>
+                        <input
+                          type="file"
+                          onChange={(event) => {
+                            const file =
+                              event.currentTarget.files &&
+                              event.currentTarget.files[0];
+                            form.setFieldValue("config", file || null);
+                          }}
+                          name="uploadFile"
+                          accept=".json"
+                        />
+                      </Accordion.Panel>
+                    </Accordion.Item>
+                  </Accordion>
+                </div>
+              </>
+            ) : null}
 
             <Group className="flex justify-center">
               <Button variant="white" type="submit">
-                Analyse
+                {repoAnalysed ? 'Analyse' : 'Fetch dates' }
               </Button>
             </Group>
           </form>

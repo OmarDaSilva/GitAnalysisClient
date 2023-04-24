@@ -9,6 +9,11 @@ export const repoStoreItemFamily = atomFamily({
   )
 });
 
+export const RepoStoreItemDatesState = atom({
+  key: 'storeItemDates',
+  default: []
+})
+
 export const CurrentRepoKeyState = atom({
   key: 'currentRepoKeyState',
   default: ''
@@ -52,6 +57,11 @@ export const SignificantEventsState = atom({
 export const VideoSpeedState = atom({
   key: "VideoSpeedState",
   default: 4000
+})
+
+export const RepoAnalysedState = atom({
+  key: "RepoAnalysedState",
+  default: false 
 })
 
 export const repoSelector = selector({

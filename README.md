@@ -1,8 +1,10 @@
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
-
 ## Getting Started
 
-First, run the development server:
+First, run the frontend client:
+- Clone both the frontend (gitanalysisclient) and backend (gitanalysisserve) repositories.
+- Install dependencies by running npm install or yarn install in each project folder.
+- Start client:
 
 ```bash
 npm run dev
@@ -12,27 +14,44 @@ yarn dev
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Git Repository Visualiser Tool
+This Tool offers an interactive way to analyze and visualize Git repositories' history and structure. With a powerful tech stack, including Next.js 12, Nodegit, Express, Mantine, Tailwind, D3 force directed graph, RecoilJS, and Emotion, the tool provides a user-friendly experience.
 
-You can start editing the page by modifying `pages/index.tsx`. The page auto-updates as you edit the file.
+## Key Features
+- Analyze repositories by entering a GitHub URL
+- Select branches and date ranges (up to 10 days) for analysis
+- Customize analysis with a JSON configuration file
+- Visualize daily code additions, deletions, merges, renames, new files, and deleted files
+- Search for specific files or directories
+- Interact with visualizations by hovering, panning, zooming, and pinning nodes
+- Customize visualizations by dragging pinned nodes
+- Track significant events with markers on the progress bar
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
+## Visualization Features
+- Locate files/directories using the search function.
+- Interact with nodes by hovering, pinning, and dragging.
+- Navigate the visualization with pan and zoom controls.
+- Refer to the color legend for easier interpretation.
+- Use the video player to watch day-by-day visualizations with adjustable speed.
+- Click on significant event markers to display event details.
+## Upload Config File (Optional) 
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+If desired, upload a configuration file in JSON format to customize your analysis. The structure of the file should be as follows:
+json
+Copy code
+{
+  "excludeDirectories": ["/path/to/directory/", "/path/*"],
+  "includeContributors": ["name"],
+  "significantEvents": [
+    {
+      "eventTitle": "",
+      "commitSha": <Comm>
+    }
+  ]
+}
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## Usage
+- Enter the repository's GitHub URL and click "Fetch Dates."
+= Select a branch and date range (up to 10 days) for analysis.
+- (Optional) Upload a JSON configuration file for customization.
+- Click "Analyze" to retrieve repository information and visualize the data.

@@ -36,19 +36,20 @@ This Tool offers an interactive way to analyze and visualize Git repositories' h
 - Click on significant event markers to display event details.
 ## Upload Config File (Optional) 
 
-If desired, upload a configuration file in JSON format to customize your analysis. The structure of the file should be as follows:
-json
-Copy code
-{
+If desired, upload a configuration file in JSON format to customize your analysis. 
+The structure of the file should be as follows: 
+
+```{
   "excludeDirectories": ["/path/to/directory/", "/path/*"],
   "includeContributors": ["name"],
   "significantEvents": [
     {
-      "eventTitle": "",
-      "commitSha": <Comm>
+      "eventTitle": "<eventTitle>",
+      "commitSha": "<commitSha>"
     }
   ]
 }
+```
 
 ## Usage
 - Enter the repository's GitHub URL and click "Fetch Dates."

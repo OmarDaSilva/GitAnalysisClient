@@ -17,7 +17,7 @@ pnpm dev
 Git Repository Visualiser Tool
 This Tool offers an interactive way to analyze and visualize Git repositories' history and structure. With a powerful tech stack, including Next.js 12, Nodegit, Express, Mantine, Tailwind, D3 force directed graph, RecoilJS, and Emotion, the tool provides a user-friendly experience.
 
-## Usage
+## Usage
 - Enter the repository's GitHub URL and click "Fetch Dates."
 - Select a branch and date range (up to 10 days) for analysis.
 - (Optional) Upload a JSON configuration file for customization.

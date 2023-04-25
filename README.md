@@ -13,7 +13,6 @@ yarn dev
 # or
 pnpm dev
 ```
-
 Git Repository Visualiser Tool
 This Tool offers an interactive way to analyze and visualize Git repositories' history and structure. With a powerful tech stack, including Next.js 12, Nodegit, Express, Mantine, Tailwind, D3 force directed graph, RecoilJS, and Emotion, the tool provides a user-friendly experience.
 
@@ -45,8 +44,11 @@ This Tool offers an interactive way to analyze and visualize Git repositories' h
 If desired, upload a configuration file in JSON format to customize your analysis. 
 The structure of the file should be as follows: 
 
+The path to directory example:
+root/src -> excludeDirectories": ["src"]
+
 ```{
-  "excludeDirectories": ["/path/to/directory/", "/path/*"],
+  "excludeDirectories": ["/path/to/directory/"],
   "includeContributors": ["name"],
   "significantEvents": [
     {

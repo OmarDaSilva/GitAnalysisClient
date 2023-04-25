@@ -20,7 +20,10 @@ export async function analyseRepoDeltaDates(
   config: File | null,
   selectedDates: string[]
 ) {
-  if (process.env.NEXT_PUBLIC_REPO_ANALYSIS_DELTA_ROUTE) {
+
+  let url = process.env.NEXT_PUBLIC_REPO_ANALYSIS_DELTA_ROUTE ?? process.env.NEXT_PUBLIC_REPO_ANALYSIS_DELTA_ROUTE_LOCAL
+
+  if (process.env.NEXT_PUBLIC_REPO_ANALYSIS_DELTA_ROUTE_LOCAL) {
     try {
       let configData = null;
       if (config) {
@@ -35,7 +38,7 @@ export async function analyseRepoDeltaDates(
       };
 
       const analysisResponse = await fetch(
-        process.env.NEXT_PUBLIC_REPO_ANALYSIS_DELTA_ROUTE,
+        url!,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -63,11 +66,11 @@ export async function analyseRepoDeltaDates(
 
 export async function repoDates(repoURL: string, branch: string) {
   console.log("url used", process.env.NEXT_PUBLIC_REPO_ANALYSIS_BACKEND_ROUTE);
-  
-  if (process.env.NEXT_PUBLIC_REPO_ANALYSIS_BACKEND_ROUTE) {
+
+  let url = process.env.NEXT_PUBLIC_REPO_ANALYSIS_BACKEND_ROUTE ?? process.env.NEXT_PUBLIC_REPO_ANALYSIS_BACKEND_ROUTE_LOCAL
     try {
       const analysisResponse = await fetch(
-        process.env.NEXT_PUBLIC_REPO_ANALYSIS_BACKEND_ROUTE,
+        url!,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -85,5 +88,4 @@ export async function repoDates(repoURL: string, branch: string) {
     } catch (error) {
       console.log(error);
     }
-  }
 }

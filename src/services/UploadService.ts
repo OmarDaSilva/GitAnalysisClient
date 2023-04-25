@@ -22,8 +22,7 @@ export async function analyseRepoDeltaDates(
 ) {
 
   let url = process.env.NEXT_PUBLIC_REPO_ANALYSIS_DELTA_ROUTE ?? process.env.NEXT_PUBLIC_REPO_ANALYSIS_DELTA_ROUTE_LOCAL
-
-  if (process.env.NEXT_PUBLIC_REPO_ANALYSIS_DELTA_ROUTE_LOCAL) {
+  
     try {
       let configData = null;
       if (config) {
@@ -61,7 +60,7 @@ export async function analyseRepoDeltaDates(
     } catch (error) {
       console.log(error);
     }
-  }
+  
 }
 
 export async function repoDates(repoURL: string, branch: string) {

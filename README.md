@@ -39,6 +39,10 @@ This Tool offers an interactive way to analyze and visualize Git repositories' h
 - Refer to the color legend for easier interpretation.
 - Use the video player to watch day-by-day visualizations with adjustable speed.
 - Click on significant event markers to display event details.
+
+The root of the repository is the largest node coloured red
+Directories are slighlty larger than files and are coloured blue 
+
 ## Upload Config File (Optional) 
 
 If desired, upload a configuration file in JSON format to customize your analysis. 

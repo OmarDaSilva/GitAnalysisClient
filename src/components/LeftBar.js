@@ -266,7 +266,6 @@ export default function LeftBar() {
                           maxDropdownHeight={200}
                           maxSelectedValues={10}
                           searchable
-                          limit={20}
                           error={form.errors.selectedDates}
                           onChange={(value) =>
                             form.setFieldValue("selectedDates", value)

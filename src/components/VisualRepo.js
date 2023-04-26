@@ -74,7 +74,7 @@ export default function VisualRepo() {
             <br />
 
             <p>
-              Fetch dates from a repository URL to get started
+              Fetch dateafa repository UR Lto get started
             </p>
 
           </div>

@@ -54,6 +54,8 @@ export default function ForceGraph({
     // Construct the scales.
     const color = nodeGroup == null ? null : d3.scaleOrdinal(nodeGroups, colors);
 
+
+    
     
     /*
       Define node colors:
@@ -69,17 +71,17 @@ export default function ForceGraph({
     .domain([
         'Orange', 'LimeGreen', 'HotPink', 'BlueViolet', 
         'Aqua', 'Gold', 'Chocolate', 'GreenYellow', 'OrangeRed', 
-        'MediumOrchid', 'Black', 'Red', 'DarkBlue', 'Grey'
+        'MediumOrchid', 'Black', 'Red', 'DarkBlue', 'Grey', 'Yellow'
     ])
     .range([
       '#FFA500', '#32CD32', '#FF69B4', '#8A2BE2', '#00FFFF', 
       '#FFD700', '#D2691E', '#ADFF2F', '#FF4500', '#BA55D3',
-      '#000000', '#FF0000', '#00008B', '#808080'
+      '#000000', '#FF0000', '#00008B', '#808080', '#FFFF00'
     ]);
   
     // Construct the forces.
 
-    const forceNode = d3.forceManyBody().strength(-150);
+    const forceNode = d3.forceManyBody().strength(-1000);
     const forceLink = d3.forceLink(links).id(({index: i}) => N[i]).distance(100);
     if (nodeStrength !== undefined) forceNode.strength(nodeStrength);
     if (linkStrength !== undefined) forceLink.strength(linkStrength); 
@@ -121,7 +123,7 @@ export default function ForceGraph({
       .selectAll("circle")
       .data(nodes)
       .join("circle")
-        .attr("r", d => d.name === "root" ? 30 : d.colour === "DarkBlue" ? 25 : nodeRadius)
+        .attr("r", d => d.name === "root" ? 100 : d.colour === "DarkBlue" ||  d.colour === "Yellow" ? 75 : nodeRadius)
         .attr("fill", d => colourScale(d.colour))
         .call(drag(simulation));
   

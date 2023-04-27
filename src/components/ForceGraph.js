@@ -128,6 +128,9 @@ export default function ForceGraph({
 
     
     const simulation = d3.forceSimulation(nodes)
+    .alphaMin(0.1)
+    .alphaDecay(0.05)
+    .velocityDecay(0.6)
     .force("link", forceLink)
     .force("charge", forceNode)
     .force("x", forceRadial)
@@ -178,7 +181,7 @@ export default function ForceGraph({
         g.attr("transform", event.transform);
         svg.property("currentScale", event.transform.k);
     });
-    
+
     svg.call(zoom); // Add this line
     svg.call(zoom.transform, d3.zoomIdentity.scale(0.05));
 

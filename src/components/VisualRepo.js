@@ -74,7 +74,7 @@ export default function VisualRepo() {
             <br />
 
             <p>
-              Test= 
+              Tes 
             </p>
 
           </div>

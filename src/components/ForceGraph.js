@@ -1,5 +1,7 @@
 import * as d3 from "d3"
 import emitter from "../eventemitter";
+import { scaleLinear } from "d3-scale";
+
 
 // Copyright 2021 Observable, Inc.
 // Released under the ISC license.
@@ -54,9 +56,38 @@ export default function ForceGraph({
     // Construct the scales.
     const color = nodeGroup == null ? null : d3.scaleOrdinal(nodeGroups, colors);
 
+    function nodeDepth(name) {
+      return (name.match(/\//g) || []).length;
+    }
+
+    function calculateRangeValueMultiplier(nodeCount) {
+      if (nodeCount <= 100) {
+        return 10;
+      } else if (nodeCount <= 500) {
+        return 15;
+      } else if (nodeCount <= 1000) {
+        return 30;
+      } else {
+        return 40;
+      }
+    }
+
+    const rangeValueMultiplier = calculateRangeValueMultiplier(nodes.length);
 
     
     
+    const radialScale = scaleLinear()
+    .domain([0, d3.max(nodes, d => nodeDepth(d.name))])
+    .range([0, Math.min(width, height) * rangeValueMultiplier]);
+
+    // maximum up to 100
+    // Math.min(width, height) * 3
+
+    // maximum 
+    // Math.min(width, height) * 55
+
+    const forceRadial = d3.forceRadial(d => radialScale(nodeDepth(d.name)), 0, 0).strength(1);
+
     /*
       Define node colors:
       Dark blue - Directories
@@ -71,18 +102,19 @@ export default function ForceGraph({
     .domain([
         'Orange', 'LimeGreen', 'HotPink', 'BlueViolet', 
         'Aqua', 'Gold', 'Chocolate', 'GreenYellow', 'OrangeRed', 
-        'MediumOrchid', 'Black', 'Red', 'DarkBlue', 'Grey', 'Yellow'
+        'MediumOrchid', 'Black', 'Red', 'DarkBlue', 'Grey', 'Yellow', 'FileYellow', 'FolderGrey', 'AquaFolder'
     ])
     .range([
       '#FFA500', '#32CD32', '#FF69B4', '#8A2BE2', '#00FFFF', 
       '#FFD700', '#D2691E', '#ADFF2F', '#FF4500', '#BA55D3',
-      '#000000', '#FF0000', '#00008B', '#808080', '#FFFF00'
+      '#000000', '#FF0000', '#00008B', '#808080', '#FFFF00', '#FFFF00', '#808080', '#00FFFF'
     ]);
   
     // Construct the forces.
 
-    const forceNode = d3.forceManyBody().strength(-1000);
-    const forceLink = d3.forceLink(links).id(({index: i}) => N[i]).distance(100);
+    const forceNode = d3.forceManyBody().strength(d => -3000 - (nodeDepth(d.name) * 4000));
+    const forceLink = d3.forceLink(links).id(({ index: i }) => N[i]).distance(d => 200 + (nodeDepth(d.source.name) * 100));
+    
     if (nodeStrength !== undefined) forceNode.strength(nodeStrength);
     if (linkStrength !== undefined) forceLink.strength(linkStrength); 
     
@@ -95,13 +127,13 @@ export default function ForceGraph({
     svg.property("currentScale", 1);
 
     
-      const simulation = d3.forceSimulation(nodes)
-          .force("link", forceLink)
-          .force("charge", forceNode)
-          .force("center",  d3.forceCenter())
-          // .alphaDecay(0.05) // Increase alpha decay (default is 0.0228)
-          .velocityDecay(0.5)
-          .on("tick", ticked);
+    const simulation = d3.forceSimulation(nodes)
+    .force("link", forceLink)
+    .force("charge", forceNode)
+    .force("x", forceRadial)
+    .force("center", d3.forceCenter())
+    .velocityDecay(0.5)
+    .on("tick", ticked);
 
     const g = svg.append("g")
 
@@ -114,6 +146,17 @@ export default function ForceGraph({
       .selectAll("line")
       .data(links)
       .join("line");
+
+
+    function calculateRadius(colour, name, nodeCount) {
+      if (name == "root") {
+        return 500
+      } else if (colour == "DarkBlue" || colour == "Yellow" || colour == "FolderGrey" || colour == "AquaFolder") {
+        return 75 * 3
+      } else {
+        return 15 * 3
+      }
+    }
   
     const node = g.append("g")
         // .attr("fill", d => colourScale(d.colour))
@@ -123,7 +166,7 @@ export default function ForceGraph({
       .selectAll("circle")
       .data(nodes)
       .join("circle")
-        .attr("r", d => d.name === "root" ? 100 : d.colour === "DarkBlue" ||  d.colour === "Yellow" ? 75 : nodeRadius)
+        .attr("r", d => calculateRadius(d.colour, d.name))
         .attr("fill", d => colourScale(d.colour))
         .call(drag(simulation));
   
@@ -135,8 +178,11 @@ export default function ForceGraph({
         g.attr("transform", event.transform);
         svg.property("currentScale", event.transform.k);
     });
+    
+    svg.call(zoom); // Add this line
+    svg.call(zoom.transform, d3.zoomIdentity.scale(0.05));
 
-    svg.call(zoom);
+
 
 
       
@@ -168,28 +214,25 @@ export default function ForceGraph({
     
     });
     
-
-    function scrollToTargetNode() {
-      if (targetNodeName) {
-        const targetNode = nodes.find(d => d.name === targetNodeName);
-        const targetX = targetNode.x;
-        const targetY = targetNode.y;
-    
-        svg.transition()
-          .duration(1000)
-          .call(
-            zoom.transform,
-            d3.zoomIdentity.translate(
-              targetX,
-              targetY
-            )
-          )
-          .on("end", () => {
-            resetNodeAppearance(targetNodeElement, originalRadius, originalColor);
-            targetNodeName = null;
-          });
-      }
+    function zoomIn() {
+      const currentScale = svg.property("currentScale");
+      const newScale = currentScale * 1.2; // Increase the scale by 20%
+      svg.call(zoom.scaleTo, newScale);
     }
+    
+    function zoomOut() {
+      const currentScale = svg.property("currentScale");
+      const newScale = currentScale * 0.8; // Decrease the scale by 20%
+      svg.call(zoom.scaleTo, newScale);
+    }
+
+    window.addEventListener("zoomInEvent", () => {
+      zoomIn();
+    });
+    
+    window.addEventListener("zoomOutEvent", () => {
+      zoomOut();
+    });
     
     function ticked() {
       link

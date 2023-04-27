@@ -13,7 +13,7 @@ import {
 } from "../atoms";
 
 import getMarkerPosition from "/src/utils/VideoControllerUtils";
-import { NumberInput, Select, Tooltip } from "@mantine/core";
+import { Button, NumberInput, Select, Tooltip } from "@mantine/core";
 
 export default function VideoController({ dates }) {
   const [currentDateRecoil, setCurrentDateRecoil] =
@@ -80,6 +80,16 @@ export default function VideoController({ dates }) {
     setVideoControllerNextDateKey(ind);
   };
 
+  const zoomOut = () => {
+    const event = new CustomEvent("zoomOutEvent");
+    window.dispatchEvent(event);
+  };
+
+  const zoomIn = () => {
+    const event = new CustomEvent("zoomInEvent");
+    window.dispatchEvent(event);
+  };
+
   useEffect(() => {
     if (videoControllerState) {
       const visualInterval = setInterval(() => {
@@ -110,12 +120,27 @@ export default function VideoController({ dates }) {
   return (
     <div className="grid grid-cols-1 gap-5 mt-5">
       <div className="flex justify-between">
-        <div className="text-center flex">
+        <div className="text-center flex flex-row">
           <p>
             {currentDateRecoil
               ? "Date: " + currentDateRecoil.slice(0, 10)
               : null}
           </p>
+        </div>
+
+        <div>
+        <Button 
+            variant="white"
+            onClick={zoomOut}
+          >
+            Zoom out
+          </Button>
+          <Button 
+            variant="white"
+            onClick={zoomIn}
+            >
+            Zoom in
+          </Button>
         </div>
 
         {significantEvents

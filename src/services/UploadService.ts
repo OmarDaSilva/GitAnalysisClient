@@ -18,7 +18,8 @@ export async function analyseRepoDeltaDates(
   repoURL: string,
   branch: string,
   config: File | null,
-  selectedDates: string[]
+  selectedDates: string[],
+  showChanges: boolean
 ) {
 
   let url = process.env.NEXT_PUBLIC_REPO_ANALYSIS_DELTA_ROUTE ?? process.env.NEXT_PUBLIC_REPO_ANALYSIS_DELTA_ROUTE_LOCAL
@@ -34,6 +35,7 @@ export async function analyseRepoDeltaDates(
         branch: branch,
         config: configData,
         selectedDates: selectedDates,
+        showChanges: showChanges
       };
 
       const analysisResponse = await fetch(

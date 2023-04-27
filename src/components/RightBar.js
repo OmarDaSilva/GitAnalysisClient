@@ -1,6 +1,13 @@
 import { useRef } from "react";
 import emitter from "../eventemitter";
-import { Accordion, Button, Divider, Notification, Paper, TextInput } from "@mantine/core";
+import {
+  Accordion,
+  Button,
+  Divider,
+  Notification,
+  Paper,
+  TextInput,
+} from "@mantine/core";
 import { useEffect, useState } from "react";
 import { useRecoilState, useRecoilValue } from "recoil";
 import {
@@ -39,7 +46,7 @@ export default function RightBar() {
 
   emitter.addListener("ElementNotFound", () => {
     setSearchError(true);
-  })
+  });
 
   // window.addEventListener("ElementNotFound", (event) => {
   //   setSearchError(true);
@@ -160,7 +167,7 @@ export default function RightBar() {
                       {fileColourLegend.map(([key, value]) => {
                         return (
                           <div
-                          key={key}
+                            key={key}
                             className="text-right m-3"
                             style={{
                               background: `linear-gradient(to right, ${dict[key]}, transparent)`,
@@ -216,15 +223,14 @@ export default function RightBar() {
                       Search
                     </Button>
                     {searchError ? (
-                      <Notification 
-                      title="Directory/File not found!" 
-                      color="red"
-                      onClose={() => {
-                        setSearchError(false)
-                      }}
+                      <Notification
+                        title="Directory/File not found!"
+                        color="red"
+                        onClose={() => {
+                          setSearchError(false);
+                        }}
                       />
                     ) : null}
-                   
                   </div>
                 </Accordion.Panel>
               ) : null}
@@ -258,7 +264,11 @@ export default function RightBar() {
                   {contributors?.length ? (
                     <Accordion.Panel>
                       {contributors.map((value, index) => {
-                        return <div key={index} className="bg-Primary">{value}</div>;
+                        return (
+                          <div key={index} className="bg-Primary">
+                            {value}
+                          </div>
+                        );
                       })}
                     </Accordion.Panel>
                   ) : (
@@ -283,7 +293,7 @@ export default function RightBar() {
                         +
                         {
                           storeItem.commitsByDay[currentDate].stats
-                            .totalAddedCodeLines
+                            ?.totalAddedCodeLines
                         }
                       </p>
                     </div>
@@ -293,28 +303,28 @@ export default function RightBar() {
                         -
                         {
                           storeItem.commitsByDay[currentDate].stats
-                            .totalRemovedCodeLines
+                            ?.totalRemovedCodeLines
                         }
                       </p>
                     </div>
                     <div className="flex flex-row justify-between">
                       <p>Deleted Files</p>
-                      {storeItem.commitsByDay[currentDate].stats.totalDeleted}
+                      {storeItem.commitsByDay[currentDate].stats?.totalDeleted}
                     </div>
                     <div className="flex flex-row justify-between">
                       <p>Modified files</p>
-                      {storeItem.commitsByDay[currentDate].stats.totalModified}
+                      {storeItem.commitsByDay[currentDate].stats?.totalModified}
                     </div>
                     <div className="flex flex-row justify-between">
                       <p>Added new files</p>
                       {
                         storeItem.commitsByDay[currentDate].stats
-                          .totalNewAddedFiles
+                          ?.totalNewAddedFiles
                       }
                     </div>
                     <div className="flex flex-row justify-between">
                       <p>File renames</p>
-                      {storeItem.commitsByDay[currentDate].stats.totalRenames}
+                      {storeItem.commitsByDay[currentDate].stats?.totalRenames}
                     </div>
                   </Accordion.Panel>
                 ) : null}

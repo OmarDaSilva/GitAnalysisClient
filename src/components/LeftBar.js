@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { analyseRepoDeltaDates, repoDates } from "../services/UploadService";
 import {
   Accordion,
@@ -8,6 +8,7 @@ import {
   LoadingOverlay,
   MultiSelect,
   Paper,
+  Radio,
   Select,
   TextInput,
   Tooltip,
@@ -33,6 +34,8 @@ export default function LeftBar() {
   const [currentRepoDates, setCurrentRepoDates] = useState(null);
   const [currRepoURL, setCurrentRepoURL] = useState(null);
   const [branchChanged, setBranchChanged] = useState(false);
+
+  const ref = useRef(null);
 
   const [currentRepoKey, setCurrentRepoKey] =
     useRecoilState(CurrentRepoKeyState);
@@ -61,7 +64,8 @@ export default function LeftBar() {
         values.repoURL,
         values.branch,
         config ?? null,
-        values.selectedDates
+        values.selectedDates,
+        values.showChanges
       );
       if (response) {
         const { repoURL, repoDates } = response;
@@ -135,6 +139,7 @@ export default function LeftBar() {
       branch: "",
       selectedDates: null,
       config: null,
+      showChanges: false,
     },
     validate: {
       repoURL: (value) => (validUrl.isHttpsUri(value) ? null : "invalid url"),
@@ -293,6 +298,26 @@ export default function LeftBar() {
                               name="uploadFile"
                               accept=".json"
                             />
+
+                            <div
+                              onClick={() =>
+                                form.setFieldValue(
+                                  "showChanges",
+                                  !form.values.showChanges
+                                )
+                              }
+                              className="mt-5 justify-between"
+                              style={{ display: "flex", alignItems: "center" }}
+                            >
+                              <Radio
+                                ref={ref}
+                                checked={form.values.showChanges}
+                                onChange={(event) => event.stopPropagation()}
+                              />
+                              <p>
+                                Show changes?
+                              </p>
+                            </div>
                           </Accordion.Panel>
                         </Accordion.Item>
                       </Accordion>

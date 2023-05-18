@@ -64,6 +64,16 @@ export const RepoAnalysedState = atom({
   default: false 
 })
 
+export const repoDatesWithCommitShasState = atom({
+  key: "repoDatesWithCommitShasState",
+  default: null
+})
+
+export const ColourLegendTypeState = atom({
+  key: 'ColourLegendTypeState',
+  default: 0
+})
+
 export const repoSelector = selector({
   key: 'repoSelector',
   get: ({get}) => {
@@ -72,16 +82,16 @@ export const repoSelector = selector({
       repo: get(repoStoreItemFamily(key))
     }
   },
-  set: ({ set }, { repoKey, repoDates, repoName, events }) => {
+  set: ({ set }, { repoKey, repoItem, repoName, events }) => {
     set(RepoKeysState, (keys) => [...keys, repoKey])
     set(repoStoreItemFamily(repoKey), {
       id: repoKey,  
-      cleanData: repoDates.cleanData,
-      commitsByDay: repoDates.commitsByDay,
+      cleanData: repoItem.cleanData,
+      commitsByDay: repoItem.commitsByDay,
       repoName: repoKey
     })
     set(CurrentRepoKeyState, repoName)
-    let dates = Object.keys(repoDates.cleanData.dataFormatted)
+    let dates = Object.keys(repoItem.cleanData.dataFormatted)
     set(repoDatesState, dates)
     set(currentDateState, dates[0])
     set( SignificantEventsState, events)

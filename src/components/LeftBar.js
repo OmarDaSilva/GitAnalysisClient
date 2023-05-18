@@ -15,13 +15,14 @@ import {
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import * as validUrl from "valid-url";
-import { useRecoilState } from "recoil";
+import { useRecoilState, useSetRecoilState } from "recoil";
 import {
   repoStoreItemFamily,
   CurrentRepoKeyState,
   repoSelector,
   RepoAnalysedState,
   RepoStoreItemDatesState,
+  ColourLegendTypeState
 } from "../atoms";
 import Image from "next/image";
 
@@ -34,7 +35,7 @@ export default function LeftBar() {
   const [currentRepoDates, setCurrentRepoDates] = useState(null);
   const [currRepoURL, setCurrentRepoURL] = useState(null);
   const [branchChanged, setBranchChanged] = useState(false);
-
+  
   const ref = useRef(null);
 
   const [currentRepoKey, setCurrentRepoKey] =
@@ -50,6 +51,8 @@ export default function LeftBar() {
   const [repoAnalysed, setRepoAnalysedState] =
     useRecoilState(RepoAnalysedState);
 
+  const setColourLegend = useSetRecoilState(ColourLegendTypeState)
+
   const onRepoUpload = async (values) => {
     setLoading(true);
 
@@ -58,21 +61,53 @@ export default function LeftBar() {
       values.selectedDates &&
       values.selectedDates.length > 0
     ) {
+
+      let commitDates = repoStoreDates.filter(
+        (repo) => repo.name == repoName && repo.branch == currentBranch
+      );
+      let commitShaDates = commitDates[0].dates;
+
+      const sortedSelectedDates = values.selectedDates.sort((a, b) => {
+        const dateA = new Date(a);
+        const dateB = new Date(b);
+      
+        if (dateA < dateB) {
+          return -1; 
+        } else if (dateA > dateB) {
+          return 1;
+        } else {
+          return 0;
+        }
+      });
+
+      let selectedCommitShaDates = {};
+      sortedSelectedDates.forEach((val) => {
+        if (commitShaDates[val]) {
+          selectedCommitShaDates[val] = commitShaDates[val];
+        }
+      });
+
+      if (selectedCommitShaDates.length == 0) {
+        throw new Error();
+      }
+      // We need to query our repoStore Item dates, for the particular repo
+      //We then get selected dates along with teh commitSHAS and send them
       let config = values.config;
 
-      let response = await analyseRepoDeltaDates(
+      let repoItem = await analyseRepoDeltaDates(
         values.repoURL,
         values.branch,
         config ?? null,
-        values.selectedDates,
-        values.showChanges
+        selectedCommitShaDates,
+        values.showChanges,
+        setColourLegend
       );
-      if (response) {
-        const { repoURL, repoDates } = response;
+      if (repoItem) {
         let repoKey = repoName;
 
-        let events = repoDates?.significantEvents;
-        setRepoSelector({ repoKey, repoDates, repoName, events });
+        
+        let events = repoItem?.significantEvents;
+        setRepoSelector({ repoKey, repoItem, repoName, events });
       }
     } else {
       setBranchChanged(false);
@@ -80,24 +115,46 @@ export default function LeftBar() {
         values.repoURL,
         values.branch
       );
+
+      // need to save the information in a way that we can query it.
+
       setRepoStoreItemDates((val) => [
         ...val,
         {
+          // we know need to consider the cases where same repo, but different branches
           name: repoName,
           dates: dates,
           branches: branches,
           main: main,
           url: values.repoURL,
+          branch:
+            form.values.branch != "" && form.values.branch != null
+              ? form.values.branch
+              : main,
         },
       ]);
-      debugger;
+
       if (currentRepoDates) {
         setCurrentRepoDates((val) => [...val, repoName]);
       } else {
         setCurrentRepoDates([repoName]);
       }
       setRepoName(repoName);
-      setDates(Object.keys(dates));
+
+      const sortedSelectedDates = Object.keys(dates).sort((a, b) => {
+        const dateA = new Date(a);
+        const dateB = new Date(b);
+      
+        if (dateA < dateB) {
+          return -1; 
+        } else if (dateA > dateB) {
+          return 1;
+        } else {
+          return 0;
+        }
+      });
+
+      setDates(sortedSelectedDates);
       setBranches(branches);
 
       if (form.values.branch == "") {
@@ -314,9 +371,7 @@ export default function LeftBar() {
                                 checked={form.values.showChanges}
                                 onChange={(event) => event.stopPropagation()}
                               />
-                              <p>
-                                Show changes?
-                              </p>
+                              <p>Show modified</p>
                             </div>
                           </Accordion.Panel>
                         </Accordion.Item>

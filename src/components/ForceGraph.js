@@ -2,13 +2,9 @@ import * as d3 from "d3"
 import emitter from "../eventemitter";
 import { scaleLinear } from "d3-scale";
 
-
-// Copyright 2021 Observable, Inc.
-// Released under the ISC license.
-// https://observablehq.com/@d3/force-directed-graph
 export default function ForceGraph({
-    nodes, // an iterable of node objects (typically [{id}, …])
-    links // an iterable of link objects (typically [{source, target}, …])
+    nodes, 
+    links 
   }, {
     nodeId = d => d.id, // given d in nodes, returns a unique identifier (string)
     nodeColour = d => d.colour,
@@ -18,15 +14,15 @@ export default function ForceGraph({
     nodeTitle, // given d in nodes, a title string
     nodeFill = "currentColor", // node stroke fill (if not using a group color encoding)
     nodeStroke = "#fff", // node stroke color
-    nodeStrokeWidth = 3, // node stroke width, in pixels
+    nodeStrokeWidth = 10, // node stroke width, in pixels
     nodeStrokeOpacity = 2, // node stroke opacity
     nodeRadius = 15, // node radius, in pixels
     nodeStrength,
     linkSource = ({source}) => source, // given d in links, returns a node identifier string
     linkTarget = ({target}) => target, // given d in links, returns a node identifier string
-    linkStroke = "#e4e4e4", // link stroke color
-    linkStrokeOpacity = 0.6, // link stroke opacity
-    linkStrokeWidth = 1.5, // given d in links, returns a stroke width in pixels
+    linkStroke = "#ffffff", // link stroke color
+    linkStrokeOpacity = 4, // link stroke opacity
+    linkStrokeWidth = 10, // given d in links, returns a stroke width in pixels
     linkStrokeLinecap = "round", // link stroke linecap
     linkStrength,
     colors = d3.schemeTableau10, // an array of color strings, for the node groups
@@ -112,8 +108,8 @@ export default function ForceGraph({
   
     // Construct the forces.
 
-    const forceNode = d3.forceManyBody().strength(d => -3000 - (nodeDepth(d.name) * 4000));
-    const forceLink = d3.forceLink(links).id(({ index: i }) => N[i]).distance(d => 200 + (nodeDepth(d.source.name) * 100));
+    const forceNode = d3.forceManyBody().strength(d => -10000  - (nodeDepth(d.name) * 5000));
+    const forceLink = d3.forceLink(links).id(({ index: i }) => N[i]).distance(d => 250 + (nodeDepth(d.source.name) * 150));
     
     if (nodeStrength !== undefined) forceNode.strength(nodeStrength);
     if (linkStrength !== undefined) forceLink.strength(linkStrength); 
@@ -126,7 +122,13 @@ export default function ForceGraph({
 
     svg.property("currentScale", 1);
 
-    
+    // const simulation = d3.forceSimulation(nodes)
+    // .force("link", d3.forceLink(links).id(d => d.id).distance(0).strength(0))
+    // .force("charge", d3.forceManyBody().strength(-50))
+    // .force("x", d3.forceX())
+    // .force("y", d3.forceY());
+
+
     const simulation = d3.forceSimulation(nodes)
     .alphaMin(0.1)
     .alphaDecay(0.05)
@@ -183,7 +185,7 @@ export default function ForceGraph({
     });
 
     svg.call(zoom); // Add this line
-    svg.call(zoom.transform, d3.zoomIdentity.scale(0.05));
+    svg.call(zoom.transform, d3.zoomIdentity.scale(0.3));
 
 
 
@@ -309,16 +311,16 @@ export default function ForceGraph({
         .on("end", dragended);
     }
 
-    node.on("click", (event, d) => {
+    node.on("dblclick", (event, d) => {
       d.fixed = !d.fixed; // Toggle the fixed attribute
       if (d.fixed) {
-          d.fx = d.x;
-          d.fy = d.y;
+        d.fx = d.x;
+        d.fy = d.y;
       } else {
-          d.fx = null;
-          d.fy = null;
+        d.fx = null;
+        d.fy = null;
       }
-  });
+    });
   
     return Object.assign(svg.node(), {scales: {color}});
   }

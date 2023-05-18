@@ -15,6 +15,7 @@ import {
   repoStoreItemFamily,
   CurrentRepoKeyState,
   FileColourLegendState,
+  ColourLegendTypeState,
 } from "../atoms";
 
 const dict = {
@@ -41,16 +42,14 @@ export default function RightBar() {
   const [fileColourLegend, setFileColourLegendState] = useRecoilState(
     FileColourLegendState
   );
+
+  const colourLegendType = useRecoilValue(ColourLegendTypeState);
   const storeItem = useRecoilValue(repoStoreItemFamily(repoKeyState));
   const searchRef = useRef(null);
 
   emitter.addListener("ElementNotFound", () => {
     setSearchError(true);
   });
-
-  // window.addEventListener("ElementNotFound", (event) => {
-  //   setSearchError(true);
-  // });
 
   const sortExtensionColours = (extensionList) => {
     const extensionDict = {};
@@ -111,6 +110,7 @@ export default function RightBar() {
         }
       });
 
+      console.log(colourLegendType);
       setFileColourLegendState(Object.entries(fileColourLegend));
     }
   }, [storeItem, currentDate, setFileColourLegendState]);
@@ -164,20 +164,83 @@ export default function RightBar() {
                   </Accordion.Control>
                   {fileColourLegend ? (
                     <Accordion.Panel>
-                      {fileColourLegend.map(([key, value]) => {
-                        return (
-                          <div
-                            key={key}
-                            className="text-right m-3"
-                            style={{
-                              background: `linear-gradient(to right, ${dict[key]}, transparent)`,
-                            }}
-                          >
-                            <p>{value.extensions.toString()}</p>
-                            <p>{value.total}</p>
-                          </div>
-                        );
-                      })}
+                      {
+                      colourLegendType == 0 ? (
+                        <>
+                        <div
+                          className="text-right m-3"
+                          style={{
+                            background: `linear-gradient(to right, #00FFFF, transparent)`,
+                          }}
+                        >
+                          <p>Modified by contributor</p>
+                        </div>
+                        <div
+                          className="text-right m-3"
+                          style={{
+                            background: `linear-gradient(to right, #00008B, transparent)`,
+                          }}
+                        >
+                          <p>Directories</p>
+                        </div>
+                        <div
+                          className="text-right m-3"
+                          style={{
+                            background: `linear-gradient(to right, #f51d21, transparent)`,
+                          }}
+                        >
+                          <p>Root</p>
+                        </div>
+                        </>
+                        
+                      ) : null}
+
+                      {colourLegendType == 1 ? (
+                        <>
+                        <div
+                          className="text-right m-3"
+                          style={{
+                            background: `linear-gradient(to right, #FFFF00, transparent)`,
+                          }}
+                        >
+                          <p>Modified</p>
+                        </div>
+                        <div
+                          className="text-right m-3"
+                          style={{
+                            background: `linear-gradient(to right, #00008B, transparent)`,
+                          }}
+                        >
+                          <p>Directories</p>
+                        </div>
+                        <div
+                          className="text-right m-3"
+                          style={{
+                            background: `linear-gradient(to right, #f51d21, transparent)`,
+                          }}
+                        >
+                          <p>Root</p>
+                        </div>
+                        </>
+                        
+                      ) : null}
+
+                      {colourLegendType == 2
+                        ? fileColourLegend.map(([key, value]) => {
+                              return (
+                                <div
+                                  key={key}
+                                  className="text-right m-3"
+                                  style={{
+                                    background: `linear-gradient(to right, ${dict[key]}, transparent)`,
+                                  }}
+                                >
+                                  <p>{value.extensions.toString()}</p>
+                                  <p>{value.total}</p>
+                                </div>
+                              );
+                          })
+                        : null}
                     </Accordion.Panel>
                   ) : null}
                 </Accordion.Item>

@@ -15,16 +15,7 @@ import {
 } from "../atoms";
 
 export default function VisualRepo() {
-  const [data, setData] = useState(null);
-  // const [currentDate, setCurrentDate] = useState(null);
-  const [dates, setDates] = useState(null);
-  const [dateAnalysis, setDateAnalysis] = useState(null);
   const [showLoader, toggleLoader] = useState(false);
-  const [currentCount, setCurrentCount] = useState(0);
-  const { state, dispatch } = useContext(ReposContext);
-
-  const [currentDateRecoil, setCurrentDateRecoil] =
-    useRecoilState(currentDateState);
 
   const [currentRepoKey, setCurrentRepoKey] =
     useRecoilState(CurrentRepoKeyState);
@@ -74,7 +65,7 @@ export default function VisualRepo() {
             <br />
 
             <p>
-              Tes 
+              Submit  github repository URL to fetch dates to get started
             </p>
 
           </div>
